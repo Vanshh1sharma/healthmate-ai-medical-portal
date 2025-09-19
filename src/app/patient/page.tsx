@@ -46,35 +46,114 @@ export default function PatientDashboard() {
     if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
       try {
         setParsing(true);
+        console.log('Starting PDF processing for file:', file.name, 'Size:', file.size, 'bytes');
         
         // Dynamically import PDF.js only when needed and on client side
         const pdfjsLib = await import("pdfjs-dist");
+        console.log('PDF.js version:', (pdfjsLib as any).version);
         
-        (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${(pdfjsLib as any).version}/pdf.worker.min.js`;
+        // Configure worker with multiple fallback options
+        const workerSources = [
+          `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${(pdfjsLib as any).version}/pdf.worker.min.js`,
+          `https://unpkg.com/pdfjs-dist@${(pdfjsLib as any).version}/build/pdf.worker.min.js`,
+          `/pdf.worker.min.js` // Fallback to local file if available
+        ];
+        
+        (pdfjsLib as any).GlobalWorkerOptions.workerSrc = workerSources[0];
 
         const buffer = await file.arrayBuffer();
+        console.log('File buffer size:', buffer.byteLength, 'bytes');
+        
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const loadingTask = (pdfjsLib as any).getDocument({ data: new Uint8Array(buffer) });
+        const loadingTask = (pdfjsLib as any).getDocument({ 
+          data: new Uint8Array(buffer),
+          verbosity: 0, // Reduce console noise
+          stopAtErrors: false // Continue processing even with minor errors
+        });
+        
         const pdf = await loadingTask.promise;
+        console.log('PDF loaded successfully. Pages:', pdf.numPages);
+        
         let fullText = "";
+        let processedPages = 0;
+        
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-          const page = await pdf.getPage(pageNum);
-          const content = await page.getTextContent();
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const strings = (content.items as any[]).map((it) => (it.str ?? ""));
-          fullText += strings.join(" ") + "\n\n";
+          try {
+            const page = await pdf.getPage(pageNum);
+            const content = await page.getTextContent();
+            
+            // Enhanced text extraction with better formatting
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const textItems = (content.items as any[]).filter(item => item.str && item.str.trim());
+            
+            if (textItems.length > 0) {
+              // Group text items by their Y coordinate to maintain line structure
+              const lines: { [key: number]: string[] } = {};
+              
+              textItems.forEach((item: any) => {
+                const y = Math.round(item.transform[5]); // Y coordinate
+                if (!lines[y]) lines[y] = [];
+                lines[y].push(item.str.trim());
+              });
+              
+              // Sort lines by Y coordinate (top to bottom)
+              const sortedLines = Object.keys(lines)
+                .map(y => parseInt(y))
+                .sort((a, b) => b - a) // Descending order (top to bottom)
+                .map(y => lines[y].join(' ').trim())
+                .filter(line => line.length > 0);
+              
+              if (sortedLines.length > 0) {
+                fullText += sortedLines.join('\n') + '\n\n';
+              }
+            }
+            
+            processedPages++;
+            console.log(`Processed page ${pageNum}/${pdf.numPages}`);
+            
+          } catch (pageError) {
+            console.warn(`Error processing page ${pageNum}:`, pageError);
+            // Continue with next page instead of failing entirely
+          }
         }
-        setFileText(fullText.trim());
+        
+        const extractedText = fullText.trim();
+        
+        if (extractedText.length === 0) {
+          throw new Error('No text could be extracted from this PDF. The file might be image-based or password-protected.');
+        }
+        
+        console.log(`Successfully extracted ${extractedText.length} characters from ${processedPages}/${pdf.numPages} pages`);
+        setFileText(extractedText);
+        
       } catch (err) {
-        setParseError("Failed to read PDF. Please try another file or paste the text.");
+        console.error('PDF processing error:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+        
+        if (errorMessage.includes('Invalid PDF')) {
+          setParseError("This file appears to be corrupted or not a valid PDF. Please try a different file.");
+        } else if (errorMessage.includes('No text could be extracted')) {
+          setParseError("Unable to extract text from this PDF. It might be an image-based PDF or password-protected. Please try converting it to text or use a different file.");
+        } else if (errorMessage.includes('worker')) {
+          setParseError("PDF processing failed due to technical issues. Please try again or paste the text manually.");
+        } else {
+          setParseError(`Failed to read PDF: ${errorMessage}. Please try another file or paste the text manually.`);
+        }
       } finally {
         setParsing(false);
       }
       return;
     }
 
-    const text = await file.text();
-    setFileText(text);
+    // Handle non-PDF files
+    try {
+      const text = await file.text();
+      setFileText(text);
+      console.log(`Successfully read text file: ${text.length} characters`);
+    } catch (err) {
+      console.error('Text file reading error:', err);
+      setParseError("Failed to read the text file. Please ensure it's a valid text file.");
+    }
   };
 
   // Show consent modal before analysis

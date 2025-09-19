@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
@@ -13,7 +14,11 @@ export default function Chatbot() {
     { role: "assistant", content: "Hi! I'm HealthMate. Ask me about your medicines. I can explain usage, side effects, and precautions." },
   ]);
   const [listening, setListening] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'hi'>('en');
   const recognitionRef = useRef<any>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -21,7 +26,7 @@ export default function Chatbot() {
     if (SR) {
       const rec = new SR();
       rec.continuous = false;
-      rec.lang = "en-US";
+      rec.lang = language === 'hi' ? 'hi-IN' : 'en-US';
       rec.interimResults = false;
       rec.onresult = (e: any) => {
         const text = Array.from(e.results).map((r: any) => r[0].transcript).join(" ");
@@ -31,15 +36,40 @@ export default function Chatbot() {
       rec.onend = () => setListening(false);
       recognitionRef.current = rec;
     }
-  }, []);
+  }, [language]);
+
+  useEffect(() => {
+    // Update initial message based on language
+    const initialMessage = language === 'hi' 
+      ? "नमस्ते! मैं HealthMate हूँ। मुझसे अपनी दवाओं के बारे में पूछें। मैं उपयोग, साइड इफेक्ट्स और सावधानियों के बारे में बता सकता हूँ।"
+      : "Hi! I'm HealthMate. Ask me about your medicines. I can explain usage, side effects, and precautions.";
+    
+    setMessages([{ role: "assistant", content: initialMessage }]);
+  }, [language]);
 
   const speak = (text: string) => {
     if (typeof window === "undefined") return;
+    
+    // Cancel any previous speech
+    window.speechSynthesis.cancel();
+    
     const utter = new SpeechSynthesisUtterance(text);
     utter.rate = 1;
     utter.pitch = 1;
-    window.speechSynthesis.cancel();
+    utter.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+    
+    utter.onstart = () => setSpeaking(true);
+    utter.onend = () => setSpeaking(false);
+    utter.onerror = () => setSpeaking(false);
+    
+    utteranceRef.current = utter;
     window.speechSynthesis.speak(utter);
+  };
+
+  const stopSpeaking = () => {
+    if (typeof window === "undefined") return;
+    window.speechSynthesis.cancel();
+    setSpeaking(false);
   };
 
   const handleVoice = () => {
@@ -53,27 +83,60 @@ export default function Chatbot() {
     }
   };
 
-  const answer = (q: string) => {
-    const lower = q.toLowerCase();
-    let resp = "I can help explain how to take medicines, possible side effects, and precautions. Please share the drug name and your question.";
-    if (lower.includes("paracetamol") || lower.includes("acetaminophen")) {
-      resp = "Paracetamol (acetaminophen) is used for pain/fever. Typical adult dose is 500–1000 mg every 6–8 hours as needed. Do not exceed 3,000 mg/day without doctor advice. Avoid combining with alcohol. Common side effects are nausea and rash. This is educational advice, not a medical diagnosis.";
-    } else if (lower.includes("ibuprofen")) {
-      resp = "Ibuprofen is an NSAID for pain/inflammation. Take with food. Typical adult dose 200–400 mg every 6–8 hours. Avoid if you have stomach ulcers, kidney disease, or are in late pregnancy. Watch for stomach pain or dark stools. Educational only.";
-    } else if (lower.includes("antibiotic")) {
-      resp = "For antibiotics, complete the full course even if you feel better. Do not share antibiotics. If you develop rash, swelling, or trouble breathing, seek urgent care. Avoid alcohol with metronidazole. Educational only.";
+  const getAIResponse = async (question: string): Promise<string> => {
+    try {
+      const response = await fetch('/api/chatbot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          question, 
+          language: language,
+          context: 'medical_chat'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+
+      const data = await response.json();
+      return data.response || (language === 'hi' 
+        ? "माफ करें, मैं अभी आपकी मदद नहीं कर सकता। कृपया बाद में कोशिश करें।"
+        : "Sorry, I cannot help you right now. Please try again later.");
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      return language === 'hi'
+        ? "माफ करें, तकनीकी समस्या के कारण मैं अभी जवाब नहीं दे सकता। कृपया फिर से कोशिश करें।"
+        : "Sorry, I'm experiencing technical difficulties. Please try again.";
     }
-    return resp;
   };
 
-  const onSend = () => {
-    if (!query.trim()) return;
+  const onSend = async () => {
+    if (!query.trim() || loading) return;
+    
     const userMsg = { role: "user" as const, content: query.trim() };
-    const botText = answer(query.trim());
-    const botMsg = { role: "assistant" as const, content: botText };
-    setMessages((m) => [...m, userMsg, botMsg]);
+    setMessages((m) => [...m, userMsg]);
     setQuery("");
-    speak(botText);
+    setLoading(true);
+    
+    try {
+      const botText = await getAIResponse(userMsg.content);
+      const botMsg = { role: "assistant" as const, content: botText };
+      setMessages((m) => [...m, botMsg]);
+      speak(botText);
+    } catch (error) {
+      const errorMsg = { 
+        role: "assistant" as const, 
+        content: language === 'hi'
+          ? "माफ करें, मुझे कोई समस्या हुई है। कृपया फिर से कोशिश करें।"
+          : "Sorry, I encountered an error. Please try again."
+      };
+      setMessages((m) => [...m, errorMsg]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -88,17 +151,28 @@ export default function Chatbot() {
                 <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-white text-lg shadow-lg">
                   🤖
                 </div>
-                <div>
+                <div className="flex-1">
                   <h3 className="text-lg font-bold text-blue-700">
                     HealthMate Assistant
                   </h3>
                   <div className="flex items-center gap-2 text-gray-600 text-xs">
                     <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                    <span>AI-powered medical guidance</span>
+                    <span>{language === 'hi' ? 'AI-संचालित चिकित्सा मार्गदर्शन' : 'AI-powered medical guidance'}</span>
                   </div>
                 </div>
-                <div className="ml-auto px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                  Online
+                <div className="flex items-center gap-2">
+                  <Select value={language} onValueChange={(value: 'en' | 'hi') => setLanguage(value)}>
+                    <SelectTrigger className="w-20 h-8 text-xs border-blue-300">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">EN</SelectItem>
+                      <SelectItem value="hi">हिं</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                    {language === 'hi' ? 'ऑनलाइन' : 'Online'}
+                  </div>
                 </div>
               </div>
             </div>
@@ -138,11 +212,14 @@ export default function Chatbot() {
                 <div className="flex items-center gap-2 mb-3">
                   <div className="flex-1 relative">
                     <Input
-                      placeholder="Ask me about medicines, side effects, dosages..."
+                      placeholder={language === 'hi' 
+                        ? "दवाओं, साइड इफेक्ट्स, खुराक के बारे में पूछें..."
+                        : "Ask me about medicines, side effects, dosages..."}
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && onSend()}
-                      className="bg-white border-blue-200 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 pr-12"
+                      onKeyDown={(e) => e.key === "Enter" && !loading && onSend()}
+                      disabled={loading}
+                      className="bg-white border-blue-200 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 pr-12 disabled:opacity-50"
                     />
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                       <span className="text-gray-400 text-xs">💬</span>
@@ -159,38 +236,72 @@ export default function Chatbot() {
                             variant="outline" 
                             size="sm"
                             onClick={handleVoice} 
+                            disabled={loading}
                             className={`border-2 ${
                               listening 
                                 ? "border-blue-400 text-blue-600 bg-blue-50 animate-pulse" 
                                 : "border-blue-200 text-blue-600 bg-white"
-                            }`}
+                            } disabled:opacity-50`}
                           >
                             {listening ? (
                               <span className="flex items-center gap-1">
-                                🎙️ <span className="text-xs">Listening...</span>
+                                🎙️ <span className="text-xs">{language === 'hi' ? 'सुन रहा...' : 'Listening...'}</span>
                               </span>
                             ) : (
                               <span className="flex items-center gap-1">
-                                🎤 <span className="text-xs">Voice</span>
+                                🎤 <span className="text-xs">{language === 'hi' ? 'आवाज़' : 'Voice'}</span>
                               </span>
                             )}
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent className="bg-blue-600 text-white border-0">
-                          {listening ? "Click to stop voice input" : "Click to use voice input"}
+                          {listening 
+                            ? (language === 'hi' ? 'आवाज़ इनपुट बंद करने के लिए क्लिक करें' : 'Click to stop voice input') 
+                            : (language === 'hi' ? 'आवाज़ इनपुट का उपयोग करने के लिए क्लिक करें' : 'Click to use voice input')}
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
+                    
+                    {speaking && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={stopSpeaking}
+                              className="border-2 border-red-200 text-red-600 bg-red-50 animate-pulse"
+                            >
+                              <span className="flex items-center gap-1">
+                                🔇 <span className="text-xs">{language === 'hi' ? 'रोकें' : 'Stop'}</span>
+                              </span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-red-600 text-white border-0">
+                            {language === 'hi' ? 'बोलना बंद करें' : 'Stop speaking'}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </div>
                   
                   <Button 
                     onClick={onSend}
-                    disabled={!query.trim()}
+                    disabled={!query.trim() || loading}
                     className="bg-blue-500 text-white font-semibold px-6 py-2 rounded-xl border-0 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className="flex items-center gap-2">
-                      <span>Send</span>
-                      <span className="text-lg">📤</span>
+                      {loading ? (
+                        <>
+                          <span>{language === 'hi' ? 'प्रतीक्षा...' : 'Sending...'}</span>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        </>
+                      ) : (
+                        <>
+                          <span>{language === 'hi' ? 'भेजें' : 'Send'}</span>
+                          <span className="text-lg">📤</span>
+                        </>
+                      )}
                     </span>
                   </Button>
                 </div>
@@ -200,7 +311,9 @@ export default function Chatbot() {
                   <div className="flex items-start gap-2">
                     <div className="text-blue-600 text-sm flex-shrink-0">⚠️</div>
                     <p className="text-xs text-blue-700 leading-relaxed">
-                      This AI assistant provides educational information only and is not a substitute for professional medical advice. Always consult healthcare providers for medical decisions.
+                      {language === 'hi'
+                        ? 'यह AI सहायक केवल शैक्षिक जानकारी प्रदान करता है और पेशेवर चिकित्सा सलाह का विकल्प नहीं है। चिकित्सा निर्णयों के लिए हमेशा स्वास्थ्य सेवा प्रदाताओं से सलाह लें।'
+                        : 'This AI assistant provides educational information only and is not a substitute for professional medical advice. Always consult healthcare providers for medical decisions.'}
                     </p>
                   </div>
                 </div>
@@ -220,7 +333,9 @@ export default function Chatbot() {
             {open ? '✕' : '🤖'}
           </div>
           <span className="font-bold">
-            {open ? "Close Assistant" : "Ask HealthMate"}
+            {open 
+              ? (language === 'hi' ? 'सहायक बंद करें' : 'Close Assistant') 
+              : (language === 'hi' ? 'HealthMate से पूछें' : 'Ask HealthMate')}
           </span>
         </span>
         {!open && (
