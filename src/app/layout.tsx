@@ -31,13 +31,13 @@ export default function RootLayout({
           data-custom-data='{"appName": "YourApp", "version": "1.0.0", "greeting": "hi"}'
         />
         {/* Global Navigation */}
-        <header className="sticky top-0 z-40 backdrop-blur-xl bg-gradient-to-r from-white/95 via-blue-50/90 to-white/95 border-b border-blue-200/50 shadow-sm">
-          <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center group">
+        <header className="sticky top-0 z-40 backdrop-blur-xl bg-gradient-to-r from-white/95 via-blue-50/90 to-white/95 border-b border-blue-200/50 shadow-sm h-[5.5rem]">
+          <div className="mx-auto max-w-7xl px-6 py-1 flex items-center justify-between h-full">
+            <Link href="/" className="flex items-center h-full group">
               <img 
                 src="/healthmate-new-logo.png" 
                 alt="HealthMate Logo" 
-                className="h-16 w-auto object-contain filter drop-shadow-sm group-hover:scale-105 transition-all duration-300"
+                className="h-full w-auto object-contain filter drop-shadow-sm group-hover:scale-105 transition-all duration-300"
               />
             </Link>
             <nav className="hidden md:flex items-center gap-2">

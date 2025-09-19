@@ -59,23 +59,45 @@ export default function Chatbot() {
     window.speechSynthesis.cancel();
     
     const utter = new SpeechSynthesisUtterance(text);
-    utter.rate = 1;
+    utter.rate = 0.9;
     utter.pitch = 1;
+    utter.volume = 1;
     utter.lang = detectedLanguage === 'hi' ? 'hi-IN' : 'en-US';
     
     // Function to set voice once voices are available
     const setVoice = () => {
       const voices = getVoices();
-      console.log('Available voices:', voices.length);
+      console.log('Available voices for', detectedLanguage, ':', voices.length);
       
       if (detectedLanguage === 'hi') {
-        // Try to find a Hindi voice
-        const hindiVoice = voices.find(voice => 
-          voice.lang.startsWith('hi') || voice.name.toLowerCase().includes('hindi')
+        // Enhanced Hindi voice detection with multiple fallbacks
+        let hindiVoice = voices.find(voice => 
+          voice.lang === 'hi-IN' || voice.lang === 'hi'
         );
+        
+        if (!hindiVoice) {
+          hindiVoice = voices.find(voice => 
+            voice.name.toLowerCase().includes('hindi') ||
+            voice.name.toLowerCase().includes('अ') ||
+            voice.lang.toLowerCase().includes('hi')
+          );
+        }
+        
+        if (!hindiVoice) {
+          // Try Google voices which often support Hindi
+          hindiVoice = voices.find(voice => 
+            voice.name.toLowerCase().includes('google') && 
+            (voice.lang.includes('hi') || voice.name.toLowerCase().includes('hindi'))
+          );
+        }
+        
         if (hindiVoice) {
           utter.voice = hindiVoice;
-          console.log('Selected Hindi voice:', hindiVoice.name);
+          console.log('Selected Hindi voice:', hindiVoice.name, hindiVoice.lang);
+        } else {
+          console.log('No Hindi voice found, using default');
+          // Force Hindi language even without specific voice
+          utter.lang = 'hi-IN';
         }
       } else {
         // Try to find an English voice
@@ -110,11 +132,28 @@ export default function Chatbot() {
         window.speechSynthesis.removeEventListener('voiceschanged', voicesChanged);
       };
       window.speechSynthesis.addEventListener('voiceschanged', voicesChanged);
+      
+      // Also try after a short delay as a fallback
+      setTimeout(() => {
+        const delayedVoices = getVoices();
+        if (delayedVoices.length > 0) {
+          setVoice();
+        }
+      }, 500);
     }
     
-    utter.onstart = () => setSpeaking(true);
-    utter.onend = () => setSpeaking(false);
-    utter.onerror = () => setSpeaking(false);
+    utter.onstart = () => {
+      setSpeaking(true);
+      console.log('Speech started for:', detectedLanguage, 'language');
+    };
+    utter.onend = () => {
+      setSpeaking(false);
+      console.log('Speech ended');
+    };
+    utter.onerror = (event) => {
+      setSpeaking(false);
+      console.error('Speech error:', event);
+    };
     
     utteranceRef.current = utter;
     window.speechSynthesis.speak(utter);

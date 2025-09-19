@@ -479,7 +479,7 @@ export default function PatientDashboard() {
                         }}
                         className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-semibold py-3 rounded-xl border-0 shadow-[0_8px_32px_rgba(34,197,94,0.35)] hover:shadow-[0_12px_48px_rgba(34,197,94,0.45)] transition-all duration-300"
                       >
-                        📥 Download Latest Report
+                        📥 Download Report
                       </Button>
                     )}
                     
@@ -899,7 +899,7 @@ export default function PatientDashboard() {
                     <div className="flex flex-col items-center gap-2">
                       <div className="text-3xl group-hover:animate-bounce">📄</div>
                       <span className="text-lg">Download PDF</span>
-                      <span className="text-sm opacity-90">Save as PDF file</span>
+                      <span className="text-sm opacity-90">Save report as PDF</span>
                     </div>
                   </Button>
                   
@@ -909,7 +909,7 @@ export default function PatientDashboard() {
                   >
                     <div className="flex flex-col items-center gap-2">
                       <div className="text-3xl group-hover:animate-pulse">📋</div>
-                      <span className="text-lg">Copy</span>
+                      <span className="text-lg">Copy Report</span>
                       <span className="text-sm opacity-90">Copy to clipboard</span>
                     </div>
                   </Button>
@@ -921,7 +921,7 @@ export default function PatientDashboard() {
                     <div className="flex flex-col items-center gap-2">
                       <div className="text-3xl group-hover:animate-spin">🔄</div>
                       <span className="text-lg">New Analysis</span>
-                      <span className="text-sm opacity-90">Start over</span>
+                      <span className="text-sm opacity-90">Start new report</span>
                     </div>
                   </Button>
                 </div>
