@@ -33,15 +33,12 @@ export default function RootLayout({
         {/* Global Navigation */}
         <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/90 border-b border-blue-200">
           <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="relative">
-                <img 
-                  src="/healthmate-logo.png" 
-                  alt="HealthMate Logo" 
-                  className="h-8 w-auto object-contain"
-                />
-              </div>
-              <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">HealthMate</span>
+            <Link href="/" className="flex items-center">
+              <img 
+                src="/healthmate-logo.png" 
+                alt="HealthMate Logo" 
+                className="h-10 w-auto object-contain"
+              />
             </Link>
             <nav className="hidden md:flex items-center gap-8">
               <Link href="/#features" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-300">Features</Link>
