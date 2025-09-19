@@ -877,11 +877,11 @@ export default function PatientDashboard() {
                       <div>
                         <h4 className="text-yellow-800 font-medium mb-2">Important Privacy Information</h4>
                         <ul className="text-yellow-700 text-sm space-y-2">
-                          <li>• Your medical report will be processed by AI to provide personalized analysis</li>
-                          <li>• Data is sent to OpenAI for processing (third-party service)</li>
-                          <li>• No personal data is stored permanently by HealthMate</li>
-                          <li>• This service is for informational purposes only</li>
-                          <li>• Always consult healthcare professionals for medical decisions</li>
+                          <li>Your medical report will be processed by AI to provide personalized analysis</li>
+                          <li>Data is sent to OpenAI for processing (third-party service)</li>
+                          <li>No personal data is stored permanently by HealthMate</li>
+                          <li>This service is for informational purposes only</li>
+                          <li>Always consult healthcare professionals for medical decisions</li>
                         </ul>
                       </div>
                     </div>

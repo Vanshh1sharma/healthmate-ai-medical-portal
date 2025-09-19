@@ -75,15 +75,12 @@ export default function Home() {
             {/* Trust indicators */}
             <div className="flex items-center gap-6 pt-2">
               <div className="flex items-center gap-2 text-gray-500 text-sm">
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
                 HIPAA Compliant
               </div>
               <div className="flex items-center gap-2 text-gray-500 text-sm">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                 AI Powered
               </div>
               <div className="flex items-center gap-2 text-gray-500 text-sm">
-                <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse" />
                 Secure & Private
               </div>
             </div>
@@ -104,7 +101,6 @@ export default function Home() {
                   <div className="absolute bottom-6 left-6 right-6">
                     <div className="bg-white/90 backdrop-blur-xl rounded-xl p-4 border border-blue-200 shadow-lg">
                       <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" />
                         <span className="text-gray-800 font-medium">AI Analysis Complete</span>
                       </div>
                     </div>
