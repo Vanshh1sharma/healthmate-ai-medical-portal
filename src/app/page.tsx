@@ -73,7 +73,7 @@ export default function Home() {
             </div>
             
             {/* Trust indicators */}
-            <div className="flex items-center gap-6 pt-4">
+            <div className="flex items-center gap-6 pt-2">
               <div className="flex items-center gap-2 text-gray-500 text-sm">
                 <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
                 HIPAA Compliant

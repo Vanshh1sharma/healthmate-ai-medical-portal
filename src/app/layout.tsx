@@ -31,19 +31,36 @@ export default function RootLayout({
           data-custom-data='{"appName": "YourApp", "version": "1.0.0", "greeting": "hi"}'
         />
         {/* Global Navigation */}
-        <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/90 border-b border-blue-200">
-          <div className="mx-auto max-w-7xl px-6 py-2 flex items-center justify-between">
+        <header className="sticky top-0 z-40 backdrop-blur-xl bg-gradient-to-r from-white/95 via-blue-50/90 to-white/95 border-b border-blue-200/50 shadow-sm">
+          <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
             <Link href="/" className="flex items-center group">
-              <img 
-                src="/healthmate-new-logo.png" 
-                alt="HealthMate Logo" 
-                className="h-20 w-auto object-contain filter drop-shadow-lg hover:drop-shadow-xl hover:scale-105 transition-all duration-300 brightness-110 contrast-105"
-              />
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 rounded-xl opacity-20 blur-sm group-hover:opacity-40 transition-all duration-300"></div>
+                <div className="relative bg-white/80 p-2 rounded-xl border border-blue-200/50 shadow-sm">
+                  <img 
+                    src="/healthmate-new-logo.png" 
+                    alt="HealthMate Logo" 
+                    className="h-12 w-auto object-contain filter drop-shadow-sm group-hover:scale-105 transition-all duration-300"
+                  />
+                </div>
+              </div>
             </Link>
-            <nav className="hidden md:flex items-center gap-8">
-              <Link href="/#features" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-300">Features</Link>
-              <Link href="/patient" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-300">Patient Portal</Link>
-              <Link href="/patient" className="px-4 py-2 text-sm font-medium bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl border border-blue-300 hover:border-blue-400 backdrop-blur-xl transition-all duration-300">Get Started</Link>
+            <nav className="hidden md:flex items-center gap-2">
+              <Link href="/#features" className="relative px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-all duration-300 rounded-lg hover:bg-blue-50 group">
+                <span className="relative z-10">✨ Features</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 rounded-lg transition-all duration-300"></div>
+              </Link>
+              <Link href="/patient" className="relative px-4 py-2 text-sm font-medium text-gray-700 hover:text-purple-600 transition-all duration-300 rounded-lg hover:bg-purple-50 group">
+                <span className="relative z-10">🏥 Patient Portal</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-50 to-pink-50 opacity-0 group-hover:opacity-100 rounded-lg transition-all duration-300"></div>
+              </Link>
+              <Link href="/patient" className="relative ml-2 px-6 py-2.5 text-sm font-semibold bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-400 hover:via-blue-500 hover:to-indigo-500 text-white rounded-xl shadow-[0_4px_20px_rgba(59,130,246,0.3)] hover:shadow-[0_6px_30px_rgba(59,130,246,0.4)] transition-all duration-300 border-0 group overflow-hidden">
+                <span className="relative z-10 flex items-center gap-2">
+                  🚀 <span>Get Started</span>
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-indigo-600 rounded-xl opacity-20 blur-sm group-hover:opacity-40 transition-all duration-300 -z-10"></div>
+              </Link>
             </nav>
           </div>
         </header>
