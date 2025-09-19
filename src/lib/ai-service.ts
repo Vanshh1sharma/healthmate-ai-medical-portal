@@ -1,7 +1,7 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Initialize Gemini AI with API key
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export interface MedicalAnalysis {
   keyFindings: string[];
@@ -41,13 +41,21 @@ export class AIService {
         Questions should help gather additional context about symptoms, duration, triggers, etc.
       `;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-5",
-        messages: [{ role: "user", content: prompt }],
-        response_format: { type: "json_object" },
-      });
-
-      const content = response.choices[0].message.content || "{}";
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent(prompt + "\n\nPlease respond with valid JSON only, no additional text.");
+      const response = await result.response;
+      let content = response.text() || "{}";
+      
+      // Clean up Gemini response - remove markdown code blocks and extra text
+      content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+      if (content.includes('\n') && content.includes('{')) {
+        // Extract JSON from potentially verbose response
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          content = jsonMatch[0];
+        }
+      }
+      
       try {
         const parsed = JSON.parse(content);
         
@@ -111,13 +119,21 @@ export class AIService {
         - recommendations: Array of practical health advice
       `;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-5",
-        messages: [{ role: "user", content: prompt }],
-        response_format: { type: "json_object" },
-      });
-
-      const content = response.choices[0].message.content || "{}";
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent(prompt + "\n\nPlease respond with valid JSON only, no additional text.");
+      const response = await result.response;
+      let content = response.text() || "{}";
+      
+      // Clean up Gemini response - remove markdown code blocks and extra text
+      content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+      if (content.includes('\n') && content.includes('{')) {
+        // Extract JSON from potentially verbose response
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          content = jsonMatch[0];
+        }
+      }
+      
       try {
         const parsed = JSON.parse(content);
         
@@ -175,13 +191,21 @@ export class AIService {
         - recommendations: Array of clinical recommendations
       `;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-5",
-        messages: [{ role: "user", content: prompt }],
-        response_format: { type: "json_object" },
-      });
-
-      const content = response.choices[0].message.content || "{}";
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent(prompt + "\n\nPlease respond with valid JSON only, no additional text.");
+      const response = await result.response;
+      let content = response.text() || "{}";
+      
+      // Clean up Gemini response - remove markdown code blocks and extra text
+      content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+      if (content.includes('\n') && content.includes('{')) {
+        // Extract JSON from potentially verbose response
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          content = jsonMatch[0];
+        }
+      }
+      
       try {
         const parsed = JSON.parse(content);
         
