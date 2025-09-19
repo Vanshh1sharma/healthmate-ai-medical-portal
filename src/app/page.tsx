@@ -61,10 +61,10 @@ export default function Home() {
       const res = await fetch("/api/summary", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, mode: "patient" }),
+        body: JSON.stringify({ text }),
       });
       const data = await res.json();
-      setResult({ summary: data.summary || "We generated a simple overview based on your inputs and file.", tips: data.tips || ["Rest well and stay hydrated", "Follow your doctor's advice", "Track symptoms daily"] });
+      setResult({ summary: data.summary || "We generated a simple overview based on your inputs and file.", tips: data.tips || ["Rest well and stay hydrated", "Consult your healthcare provider if symptoms persist", "Track symptoms daily"] });
       setPhase("result");
     } catch (err) {
       setResult({ summary: "We couldn't process the file. Showing a basic guide from your answers.", tips: ["Monitor symptoms and seek care if they worsen", "Use over-the-counter relief as appropriate", "Schedule a check-up if persistent"] });

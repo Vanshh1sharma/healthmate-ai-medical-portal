@@ -58,7 +58,7 @@ export default function PatientDashboard() {
       const res = await fetch("/api/summary", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: fileText, mode: "patient" }),
+        body: JSON.stringify({ text: fileText }),
       });
       const data = await res.json();
       setSummary(data.summary);

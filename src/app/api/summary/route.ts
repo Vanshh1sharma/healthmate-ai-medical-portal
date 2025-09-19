@@ -2,9 +2,8 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { text, mode } = await req.json();
+    const { text } = await req.json();
     const raw: string = String(text || "");
-    const modeStr: string = (mode === "doctor" ? "doctor" : "patient");
 
     if (!raw.trim()) {
       return NextResponse.json({ error: "No text provided" }, { status: 400 });
@@ -17,8 +16,6 @@ export async function POST(req: Request) {
       .filter(Boolean);
 
     const take = sentences.slice(0, 3).join(" ");
-
-    const technical = `Technical Overview: ${take}`;
     const friendly = `Summary: ${take}`;
 
     // Extract some mock insights
@@ -30,9 +27,7 @@ export async function POST(req: Request) {
       { label: "Sentence Count", value: String(sentences.length) },
     ];
 
-    const summary = modeStr === "doctor"
-      ? `${technical}\n\nImpression: Based on provided notes, consider differential refinement and verify against labs and vitals.`
-      : `${friendly}\n\nWhat it means: This simplifies your report into the most important points. Please consult a clinician for decisions.`;
+    const summary = `${friendly}\n\nWhat it means: This simplifies your report into the most important points. Please consult with your healthcare provider for medical decisions.`;
 
     return NextResponse.json({ summary, insights });
   } catch (e: any) {
