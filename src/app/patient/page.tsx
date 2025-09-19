@@ -69,61 +69,106 @@ export default function PatientDashboard() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-2xl sm:text-3xl font-semibold">Patient Dashboard</h1>
-      <p className="text-muted-foreground mt-1">Upload a health report and get an AI summary with insights.</p>
+    <div className="min-h-screen bg-background">
+      {/* Background effects */}
+      <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden style={{
+        background: "radial-gradient(1200px 600px at 80% -10%, rgba(88,101,242,0.15), transparent 60%), radial-gradient(1000px 500px at -10% 20%, rgba(16,185,129,0.12), transparent 60%)",
+        maskImage: "radial-gradient(ellipse at center, black 40%, transparent 70%)"
+      }} />
+      <div className="absolute inset-0 -z-20 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:28px_28px]" />
+      
+      <div className="mx-auto max-w-6xl px-6 py-16">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">
+            Patient Portal
+          </h1>
+          <p className="text-lg text-white/70 max-w-2xl mx-auto">
+            Upload your health reports and receive AI-powered summaries with personalized insights and recommendations.
+          </p>
+        </div>
 
-      <div className="mt-8 grid md:grid-cols-2 gap-6">
-        <Card className="border-white/10 bg-white/[0.04] backdrop-blur-xl">
-          <CardHeader>
-            <CardTitle>Upload Report</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Input type="file" accept=".pdf,.txt,.md,.json,.csv,.log,.doc,.docx" onChange={(e) => onFile(e.target.files?.[0])} />
+        <div className="grid md:grid-cols-2 gap-8">
+          <Card className="border border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl shadow-2xl">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">Upload Medical Report</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+            <div className="relative">
+              <Input type="file" accept=".pdf,.txt,.md,.json,.csv,.log,.doc,.docx" onChange={(e) => onFile(e.target.files?.[0])} 
+                className="bg-white/10 border-white/20 text-white file:bg-gradient-to-r file:from-emerald-500 file:to-cyan-500 file:text-white file:border-0 file:rounded-lg file:px-4 file:py-2 file:mr-4 hover:bg-white/15 transition-all duration-300" />
+            </div>
             {fileName && (
-              <p className="text-xs text-muted-foreground">Selected: {fileName}{parsing ? " – parsing PDF…" : ""}</p>
+              <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                <p className="text-sm text-white/80">📄 Selected: <span className="text-white font-medium">{fileName}</span>{parsing ? " – parsing PDF…" : ""}</p>
+              </div>
             )}
             {parseError && (
-              <p className="text-xs text-destructive">{parseError}</p>
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+                <p className="text-sm text-red-300">{parseError}</p>
+              </div>
             )}
             <Textarea
               value={fileText}
               onChange={(e) => setFileText(e.target.value)}
               placeholder="Or paste your report text here..."
-              className="min-h-[160px]"
+              className="min-h-[160px] bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/20 transition-all duration-300"
             />
-            <Button onClick={onSummarize} disabled={loading || parsing || !fileText.trim()}>
-              {loading ? "Summarizing..." : "Generate Summary"}
+            <Button 
+              onClick={onSummarize} 
+              disabled={loading || parsing || !fileText.trim()}
+              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold px-6 py-3 rounded-xl border-0 shadow-[0_8px_32px_rgba(16,185,129,0.35)] hover:shadow-[0_12px_48px_rgba(16,185,129,0.45)] transition-all duration-300 disabled:opacity-50"
+            >
+              {loading ? "🔄 Analyzing..." : "✨ Generate AI Summary"}
             </Button>
           </CardContent>
         </Card>
 
-        <Card className="border-white/10 bg-white/[0.04] backdrop-blur-xl">
-          <CardHeader>
-            <CardTitle>AI Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {summary ? (
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{summary}</p>
-            ) : (
-              <p className="text-sm text-muted-foreground">Your summary will appear here.</p>
-            )}
+          <Card className="border border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl shadow-2xl">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">AI-Generated Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {summary ? (
+                <div className="space-y-4">
+                  <p className="whitespace-pre-wrap leading-relaxed text-white/80">{summary}</p>
+                  <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                    <p className="text-sm text-emerald-300 font-medium">✅ Analysis Complete</p>
+                    <p className="text-xs text-emerald-200/80 mt-1">This summary was generated using advanced AI to help you understand your medical report better.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-4xl mb-4">🤖</div>
+                  <p className="text-white/60">Your AI-generated summary will appear here once you upload and analyze your medical report.</p>
+                </div>
+              )}
           </CardContent>
         </Card>
       </div>
 
-      <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {insights.map((i, idx) => (
-          <Card key={idx} className="border-white/10 bg-white/[0.04] backdrop-blur-xl">
-            <CardHeader>
-              <CardTitle className="text-base">{i.label}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">{i.value}</p>
-              {i.trend && <p className="text-xs text-muted-foreground mt-1">Trend: {i.trend}</p>}
-            </CardContent>
-          </Card>
-        ))}
+        {insights.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">Key Insights</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {insights.map((i, idx) => (
+                <Card key={idx} className="group border border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-1">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">{i.label}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-white/80 mb-3">{i.value}</p>
+                    {i.trend && (
+                      <div className="bg-white/5 rounded-lg p-2 border border-white/10">
+                        <p className="text-xs text-white/60">Trend: <span className="text-cyan-400">{i.trend}</span></p>
+                      </div>
+                    )}
+                    <div className="mt-4 w-8 h-1 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

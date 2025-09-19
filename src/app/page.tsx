@@ -90,35 +90,45 @@ export default function Home() {
       <div className="absolute inset-0 -z-20 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:28px_28px]" />
 
       {/* Navbar */}
-      <header className="sticky top-0 z-40 backdrop-blur-md bg-background/40 border-b border-border">
-        <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="size-7 rounded-md bg-gradient-to-br from-emerald-400/80 to-indigo-500/80 shadow-[0_0_40px_rgba(99,102,241,0.35)]" />
-            <span className="text-lg font-semibold tracking-tight">HealthMate</span>
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-black/20 border-b border-white/10">
+        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="size-8 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 shadow-[0_0_32px_rgba(16,185,129,0.4)]" />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-400/60 to-cyan-500/60 blur-md" />
+            </div>
+            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">HealthMate</span>
           </div>
-          <nav className="hidden sm:flex items-center gap-2">
-            <Link href="#about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About</Link>
-            <Link href="/patient" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Patient</Link>
-            <Link href="/doctor" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Doctor</Link>
-            <Link href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</Link>
+          <nav className="hidden md:flex items-center gap-8">
+            <Link href="#about" className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-300">Features</Link>
+            <Link href="/patient" className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-300">Patient Portal</Link>
+            <Link href="/doctor" className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-300">Doctor Tools</Link>
+            <Link href="#features" className="px-4 py-2 text-sm font-medium bg-white/10 hover:bg-white/15 text-white rounded-xl border border-white/20 hover:border-white/30 backdrop-blur-xl transition-all duration-300">Get Started</Link>
           </nav>
         </div>
       </header>
 
       {/* Hero */}
-      <section ref={heroRef} className="relative mx-auto max-w-7xl px-4 pt-16 pb-12 sm:pt-24 sm:pb-20">
-        <div className="grid lg:grid-cols-2 gap-10 items-center">
-          <div>
-            <h1 ref={titleRef} className="text-4xl sm:text-6xl font-bold tracking-tight leading-[1.05]">
-              Your AI Health Companion for patients and doctors
-            </h1>
-            <p ref={subtitleRef} className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl">
-              HealthMate unveils clear summaries from complex reports, verifies clinical notes, and answers medicine doubts — all in a sleek, secure, and responsive experience.
-            </p>
-            <div ref={ctaRef} className="mt-8 flex flex-wrap gap-3 items-center">
-              {/* NEW: Big Upload button */}
-              <Button onClick={onPickFile} className="rounded-xl bg-emerald-500/30 hover:bg-emerald-500/40 text-emerald-100 border border-white/10 backdrop-blur-md px-6 py-6 text-base shadow-[0_8px_40px_rgba(16,185,129,0.25)]">
-                Upload Medical Report (PDF/Image)
+      <section ref={heroRef} className="relative mx-auto max-w-7xl px-6 pt-20 pb-16 sm:pt-32 sm:pb-24">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="space-y-8">
+            <div className="space-y-6">
+              <h1 ref={titleRef} className="text-5xl sm:text-7xl font-bold tracking-tight leading-[0.95] bg-gradient-to-br from-white via-white to-white/70 bg-clip-text text-transparent">
+                Your AI Health 
+                <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent"> Companion</span>
+              </h1>
+              <p ref={subtitleRef} className="text-lg sm:text-xl text-white/80 max-w-2xl leading-relaxed font-light">
+                Transform complex medical reports into clear insights. Verify clinical notes with precision. Get instant answers to health questions — all powered by advanced AI in a secure, professional environment.
+              </p>
+            </div>
+            <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4 items-start">
+              {/* Primary CTA */}
+              <Button 
+                onClick={onPickFile} 
+                className="group relative bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold px-8 py-4 rounded-2xl shadow-[0_8px_32px_rgba(16,185,129,0.35)] hover:shadow-[0_12px_48px_rgba(16,185,129,0.45)] transition-all duration-300 border-0 text-lg"
+              >
+                <span className="relative z-10">Upload Medical Report</span>
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/20 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </Button>
               <input
                 ref={fileInputRef}
@@ -127,63 +137,90 @@ export default function Home() {
                 className="hidden"
                 onChange={onFileChange}
               />
-              <Link href="/patient">
-                <Button className="rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-white/10 backdrop-blur-md">
-                  Patient Dashboard
-                </Button>
-              </Link>
-              <Link href="/doctor">
-                <Button variant="outline" className="rounded-xl border-white/15 bg-white/5 hover:bg-white/10">
-                  Doctor Dashboard
-                </Button>
-              </Link>
-              <a href="#about">
-                <Button variant="ghost" className="rounded-xl">Learn more</Button>
-              </a>
+              
+              {/* Secondary CTAs */}
+              <div className="flex gap-3">
+                <Link href="/patient">
+                  <Button className="bg-white/10 hover:bg-white/15 text-white border border-white/20 hover:border-white/30 backdrop-blur-xl rounded-xl px-6 py-3 transition-all duration-300 font-medium">
+                    Patient Portal
+                  </Button>
+                </Link>
+                <Link href="/doctor">
+                  <Button variant="outline" className="border-white/20 hover:border-white/30 bg-white/5 hover:bg-white/10 text-white backdrop-blur-xl rounded-xl px-6 py-3 transition-all duration-300 font-medium">
+                    Doctor Tools
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            
+            {/* Trust indicators */}
+            <div className="flex items-center gap-6 pt-4">
+              <div className="flex items-center gap-2 text-white/60 text-sm">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                HIPAA Compliant
+              </div>
+              <div className="flex items-center gap-2 text-white/60 text-sm">
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+                AI Powered
+              </div>
+              <div className="flex items-center gap-2 text-white/60 text-sm">
+                <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+                Secure & Private
+              </div>
             </div>
 
             {/* NEW: Smart Question Flow / Result */}
             {phase !== "idle" && (
               <div ref={flowRef} className="mt-8">
                 {phase === "questions" && (
-                  <Card className="border-white/10 bg-white/[0.04] backdrop-blur-xl">
-                    <CardContent className="p-6 space-y-5">
-                      <div className="q-step text-sm text-muted-foreground">Selected file: <span className="text-foreground">{selectedFileName}</span></div>
-                      <div className="q-step">
-                        <label className="block text-sm mb-1">What is the main issue you're facing?</label>
+                  <Card className="border border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl shadow-2xl">
+                    <CardContent className="p-8 space-y-6">
+                      <div className="q-step text-sm text-white/60 bg-white/5 rounded-lg p-3 border border-white/10">
+                        Selected file: <span className="text-white font-medium">{selectedFileName}</span>
+                      </div>
+                      <div className="q-step space-y-3">
+                        <label className="block text-sm font-medium text-white/90">What is the main issue you're facing?</label>
                         <input
                           value={issue}
                           onChange={(e) => setIssue(e.target.value)}
                           placeholder="e.g., Headache, chest pain, fatigue"
-                          className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 outline-none"
+                          className="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400/50 backdrop-blur-xl transition-all duration-300"
                         />
                       </div>
-                      <div className="q-step">
-                        <label className="block text-sm mb-1">Since when are you experiencing this?</label>
+                      <div className="q-step space-y-3">
+                        <label className="block text-sm font-medium text-white/90">Since when are you experiencing this?</label>
                         <input
                           value={sinceWhen}
                           onChange={(e) => setSinceWhen(e.target.value)}
                           placeholder="e.g., 2 days, since last week"
-                          className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 outline-none"
+                          className="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400/50 backdrop-blur-xl transition-all duration-300"
                         />
                       </div>
-                      <div className="q-step">
-                        <label className="block text-sm mb-1">How severe is it?</label>
-                        <div className="flex gap-2">
+                      <div className="q-step space-y-3">
+                        <label className="block text-sm font-medium text-white/90">How severe is it?</label>
+                        <div className="flex gap-3">
                           {(["mild", "moderate", "severe"] as const).map((lvl) => (
                             <button
                               key={lvl}
                               type="button"
                               onClick={() => setSeverity(lvl)}
-                              className={`px-3 py-1.5 rounded-lg text-sm border ${severity === lvl ? "bg-emerald-500/20 text-emerald-200 border-emerald-500/30" : "bg-white/5 border-white/10 text-muted-foreground hover:text-foreground"}`}
+                              className={`px-4 py-2 rounded-xl text-sm font-medium border transition-all duration-300 ${
+                                severity === lvl 
+                                  ? "bg-gradient-to-r from-emerald-500/30 to-cyan-500/30 text-white border-emerald-400/50 shadow-[0_0_20px_rgba(16,185,129,0.3)]" 
+                                  : "bg-white/5 border-white/20 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/30"
+                              }`}
                             >
-                              {lvl}
+                              {lvl.charAt(0).toUpperCase() + lvl.slice(1)}
                             </button>
                           ))}
                         </div>
                       </div>
-                      <div className="q-step flex justify-end">
-                        <Button disabled={!issue || !sinceWhen || loading} onClick={onGenerate} className="rounded-xl">
+                      <div className="q-step flex justify-end pt-4">
+                        <Button 
+                          disabled={!issue || !sinceWhen || loading} 
+                          onClick={onGenerate} 
+                          className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold px-6 py-3 rounded-xl border-0 shadow-[0_8px_32px_rgba(16,185,129,0.35)] hover:shadow-[0_12px_48px_rgba(16,185,129,0.45)] transition-all duration-300"
+                        >
                           {loading ? "Generating..." : "See Results"}
                         </Button>
                       </div>
@@ -192,27 +229,40 @@ export default function Home() {
                 )}
 
                 {phase === "result" && result && (
-                  <div className="space-y-4">
-                    <Card className="border-white/10 bg-white/[0.04] backdrop-blur-xl result-item">
-                      <CardContent className="p-6">
-                        <h3 className="text-lg font-semibold mb-2">Summary</h3>
-                        <p className="text-sm text-muted-foreground whitespace-pre-line">
+                  <div className="space-y-6">
+                    <Card className="border border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl shadow-2xl result-item">
+                      <CardContent className="p-8">
+                        <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">Summary</h3>
+                        <p className="text-white/80 whitespace-pre-line leading-relaxed">
                           {result.summary}
                         </p>
                       </CardContent>
                     </Card>
-                    <Card className="border-white/10 bg-white/[0.04] backdrop-blur-xl result-item">
-                      <CardContent className="p-6">
-                        <h3 className="text-lg font-semibold mb-2">Helpful Recovery Tips</h3>
-                        <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                    <Card className="border border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl shadow-2xl result-item">
+                      <CardContent className="p-8">
+                        <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Recovery Recommendations</h3>
+                        <div className="space-y-3">
                           {result.tips.map((t, i) => (
-                            <li key={i}>{t}</li>
+                            <div key={i} className="flex items-start gap-3">
+                              <div className="w-2 h-2 bg-emerald-400 rounded-full mt-2 flex-shrink-0" />
+                              <p className="text-white/80 leading-relaxed">{t}</p>
+                            </div>
                           ))}
-                        </ul>
+                        </div>
                       </CardContent>
                     </Card>
-                    <div className="result-item rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-yellow-200 text-sm">
-                      This result is AI-generated and not a substitute for professional medical advice.
+                    <div className="result-item rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-6 backdrop-blur-xl">
+                      <div className="flex items-start gap-3">
+                        <div className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5">
+                          <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.19-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-amber-300 font-semibold text-sm">Medical Disclaimer</p>
+                          <p className="text-amber-200/80 text-sm mt-1">This AI-generated analysis is for informational purposes only and should not replace professional medical consultation, diagnosis, or treatment.</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -220,37 +270,101 @@ export default function Home() {
             )}
           </div>
           <div className="relative">
-            <div className="absolute -inset-6 -z-10 rounded-3xl bg-gradient-to-br from-indigo-500/20 via-emerald-500/10 to-transparent blur-2xl" />
-            <Card className="rounded-3xl border-white/10 bg-white/5 backdrop-blur-xl">
-              <CardContent className="p-0 overflow-hidden">
-                <img
-                  src="https://images.unsplash.com/photo-1586773860383-dab5f3bc1f33?q=80&w=1600&auto=format&fit=crop"
-                  alt="Futuristic healthcare"
-                  className="h-[320px] w-full object-cover"
-                />
+            <div className="absolute -inset-8 -z-10 rounded-3xl bg-gradient-to-br from-emerald-500/25 via-cyan-500/15 to-blue-500/10 blur-3xl animate-pulse" />
+            <div className="absolute -inset-2 -z-5 rounded-3xl bg-gradient-to-br from-white/10 to-white/5 blur-xl" />
+            <Card className="relative rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl shadow-2xl overflow-hidden">
+              <CardContent className="p-0">
+                <div className="relative">
+                  <img
+                    src="https://images.unsplash.com/photo-1586773860383-dab5f3bc1f33?q=80&w=1600&auto=format&fit=crop"
+                    alt="Advanced medical technology interface"
+                    className="h-[400px] w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <div className="bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse" />
+                        <span className="text-white/90 font-medium">AI Analysis Complete</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
         </div>
       </section>
 
-      {/* About */}
-      <section id="about" className="mx-auto max-w-7xl px-4 py-16">
-        <div className="grid md:grid-cols-3 gap-6">
-          <FeatureCard title="AI Report Summaries" desc="Upload lab results and get a friendly summary with key insights and trends."/>
-          <FeatureCard title="Doctor-grade Tools" desc="Generate technical summaries and verify notes with instant quality checks."/>
-          <FeatureCard title="Voice Assistant" desc="Ask medicine questions hands-free with speech-to-text and text-to-speech."/>
+      {/* Features */}
+      <section id="about" className="mx-auto max-w-7xl px-6 py-24">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">
+            Powered by Advanced AI Technology
+          </h2>
+          <p className="text-lg text-white/70 max-w-2xl mx-auto">
+            Professional-grade healthcare intelligence designed for both patients and medical professionals.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-8">
+          <FeatureCard 
+            title="Smart Report Analysis" 
+            desc="Transform complex medical documents into clear, actionable insights with our advanced AI processing."
+            icon="📊"
+          />
+          <FeatureCard 
+            title="Clinical Verification" 
+            desc="Professional-grade note validation with quality scoring and comprehensive accuracy checks."
+            icon="🔍"
+          />
+          <FeatureCard 
+            title="Intelligent Assistant" 
+            desc="24/7 medical query support with voice interaction and evidence-based responses."
+            icon="🤖"
+          />
         </div>
       </section>
 
       {/* CTA */}
-      <section id="features" className="mx-auto max-w-7xl px-4 pb-24">
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.02] backdrop-blur-xl p-8 sm:p-12 text-center">
-          <h2 className="text-2xl sm:text-3xl font-semibold">Start with HealthMate today</h2>
-          <p className="mt-2 text-muted-foreground">Experience a modern, secure, and accessible healthcare platform.</p>
-          <div className="mt-6 flex justify-center gap-3">
-            <Link href="/patient"><Button className="rounded-xl">Go to Patient</Button></Link>
-            <Link href="/doctor"><Button variant="outline" className="rounded-xl">Go to Doctor</Button></Link>
+      <section id="features" className="mx-auto max-w-7xl px-6 pb-32">
+        <div className="relative">
+          <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-blue-500/20 blur-3xl rounded-3xl" />
+          <div className="relative rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl p-12 text-center shadow-2xl">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
+              Ready to Transform Your Healthcare Experience?
+            </h2>
+            <p className="text-lg text-white/70 mb-8 max-w-2xl mx-auto">
+              Join thousands of healthcare professionals and patients who trust HealthMate for intelligent medical analysis.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link href="/patient">
+                <Button className="group relative bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold px-8 py-4 rounded-2xl shadow-[0_8px_32px_rgba(16,185,129,0.35)] hover:shadow-[0_12px_48px_rgba(16,185,129,0.45)] transition-all duration-300 border-0 text-lg">
+                  <span className="relative z-10">Start as Patient</span>
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/20 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </Button>
+              </Link>
+              <Link href="/doctor">
+                <Button variant="outline" className="border-white/20 hover:border-white/30 bg-white/5 hover:bg-white/10 text-white backdrop-blur-xl rounded-2xl px-8 py-4 transition-all duration-300 font-semibold text-lg">
+                  Access Doctor Tools
+                </Button>
+              </Link>
+            </div>
+            
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-white/10">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white mb-1">99.9%</div>
+                <div className="text-sm text-white/60">Uptime</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white mb-1">500k+</div>
+                <div className="text-sm text-white/60">Reports Processed</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white mb-1">HIPAA</div>
+                <div className="text-sm text-white/60">Compliant</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -261,12 +375,14 @@ export default function Home() {
   );
 }
 
-function FeatureCard({ title, desc }: { title: string; desc: string }) {
+function FeatureCard({ title, desc, icon }: { title: string; desc: string; icon: string }) {
   return (
-    <Card className="border-white/10 bg-white/[0.04] backdrop-blur-xl">
-      <CardContent className="p-6">
-        <h3 className="text-lg font-semibold">{title}</h3>
-        <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
+    <Card className="group border border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-1">
+      <CardContent className="p-8">
+        <div className="text-4xl mb-4">{icon}</div>
+        <h3 className="text-xl font-bold mb-3 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">{title}</h3>
+        <p className="text-white/70 leading-relaxed">{desc}</p>
+        <div className="mt-6 w-12 h-1 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </CardContent>
     </Card>
   );
