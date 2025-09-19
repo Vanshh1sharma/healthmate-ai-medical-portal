@@ -34,6 +34,9 @@ export default function PatientDashboard() {
   const [reportType, setReportType] = useState<'personal' | 'professional' | null>(null);
   const [finalReport, setFinalReport] = useState<GeneratedReport | null>(null);
   const [generatingReport, setGeneratingReport] = useState(false);
+  const [globalError, setGlobalError] = useState<string>("");
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [consentGiven, setConsentGiven] = useState(false);
 
   const onFile = async (file?: File) => {
     if (!file) return;
@@ -74,26 +77,51 @@ export default function PatientDashboard() {
     setFileText(text);
   };
 
+  // Show consent modal before analysis
+  const startAnalysis = () => {
+    if (!fileText.trim()) return;
+    if (!consentGiven) {
+      setShowConsentModal(true);
+      return;
+    }
+    analyzeReport();
+  };
+
   // Analyze report and start Q&A workflow
   const analyzeReport = async () => {
-    if (!fileText.trim()) return;
     setLoading(true);
+    setGlobalError("");
+    setParseError("");
     try {
       const res = await fetch("/api/analyze-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: fileText }),
       });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Server error: ${res.status}`);
+      }
+      
       const data = await res.json();
       if (data.error) {
         throw new Error(data.error);
       }
+      
+      // Validate that we got proper analysis data
+      if (!data.analysis || !data.analysis.questions || data.analysis.questions.length === 0) {
+        throw new Error("Invalid analysis received from server");
+      }
+      
       setAnalysis(data.analysis);
       setCurrentStep('questions');
       setCurrentQuestionIndex(0);
     } catch (error) {
       console.error('Error analyzing report:', error);
-      setParseError(error instanceof Error ? error.message : 'Failed to analyze report');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to analyze report';
+      setGlobalError(errorMessage);
+      setParseError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -120,6 +148,7 @@ export default function PatientDashboard() {
     
     setReportType(type);
     setGeneratingReport(true);
+    setGlobalError("");
     
     try {
       const reportData = {
@@ -134,16 +163,26 @@ export default function PatientDashboard() {
         body: JSON.stringify({ reportData, reportType: type }),
       });
       
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Server error: ${res.status}`);
+      }
+      
       const data = await res.json();
       if (data.error) {
         throw new Error(data.error);
+      }
+      
+      if (!data.report || !data.report.content) {
+        throw new Error("Invalid report received from server");
       }
       
       setFinalReport(data.report);
       setCurrentStep('final-report');
     } catch (error) {
       console.error('Error generating report:', error);
-      setParseError(error instanceof Error ? error.message : 'Failed to generate report');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate report';
+      setGlobalError(errorMessage);
     } finally {
       setGeneratingReport(false);
     }
@@ -161,6 +200,9 @@ export default function PatientDashboard() {
     setFileText("");
     setFileName("");
     setParseError("");
+    setGlobalError("");
+    setShowConsentModal(false);
+    setConsentGiven(false);
   };
 
   return (
@@ -183,6 +225,25 @@ export default function PatientDashboard() {
         </div>
 
         <div className="space-y-8">
+          {/* Global Error Display */}
+          {globalError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <div className="text-red-600 mr-3">⚠️</div>
+                <div>
+                  <h4 className="text-red-800 font-medium">Error</h4>
+                  <p className="text-red-700 text-sm">{globalError}</p>
+                </div>
+                <button 
+                  onClick={() => setGlobalError("")}
+                  className="ml-auto text-red-400 hover:text-red-600"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
+          
           {/* Upload Step */}
           {currentStep === 'upload' && (
             <div className="grid md:grid-cols-2 gap-8">
@@ -212,7 +273,7 @@ export default function PatientDashboard() {
                     className="min-h-[160px] bg-white border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
                   />
                   <Button 
-                    onClick={analyzeReport} 
+                    onClick={startAnalysis} 
                     disabled={loading || parsing || !fileText.trim()}
                     className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl border-0 shadow-[0_8px_32px_rgba(59,130,246,0.35)] hover:shadow-[0_12px_48px_rgba(59,130,246,0.45)] transition-all duration-300 disabled:opacity-50"
                   >
@@ -351,6 +412,20 @@ export default function PatientDashboard() {
                   </div>
                 </div>
                 
+                {/* AI Disclaimer */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <div className="text-yellow-600 mr-3 mt-1">⚠️</div>
+                    <div>
+                      <h4 className="text-yellow-800 font-medium mb-1">Important Disclaimer</h4>
+                      <p className="text-yellow-700 text-sm">
+                        This is an AI-generated report and should not replace professional medical advice. 
+                        Please consult with qualified healthcare providers for medical decisions.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
                 {finalReport.recommendations && finalReport.recommendations.length > 0 && (
                   <div className="bg-green-50 rounded-lg p-4 border border-green-200">
                     <h4 className="font-bold text-green-800 mb-2">Key Recommendations:</h4>
@@ -382,6 +457,61 @@ export default function PatientDashboard() {
                 </div>
               </CardContent>
             </Card>
+          )}
+          
+          {/* Privacy Consent Modal */}
+          {showConsentModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <Card className="max-w-lg mx-4 border border-blue-200 bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-2xl shadow-2xl">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+                    Privacy & Data Processing Notice
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-start">
+                      <div className="text-yellow-600 mr-3 mt-1">⚠️</div>
+                      <div>
+                        <h4 className="text-yellow-800 font-medium mb-2">Important Privacy Information</h4>
+                        <ul className="text-yellow-700 text-sm space-y-2">
+                          <li>• Your medical report will be processed by AI to provide personalized analysis</li>
+                          <li>• Data is sent to OpenAI for processing (third-party service)</li>
+                          <li>• No personal data is stored permanently by HealthMate</li>
+                          <li>• This service is for informational purposes only</li>
+                          <li>• Always consult healthcare professionals for medical decisions</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-600 text-sm">
+                    By proceeding, you acknowledge that you understand how your data will be processed and 
+                    consent to the AI analysis of your medical information.
+                  </p>
+                  
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      onClick={() => {
+                        setConsentGiven(true);
+                        setShowConsentModal(false);
+                        analyzeReport();
+                      }}
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl flex-1"
+                    >
+                      I Consent - Continue Analysis
+                    </Button>
+                    <Button
+                      onClick={() => setShowConsentModal(false)}
+                      variant="outline"
+                      className="border-gray-300 text-gray-600 hover:bg-gray-50 px-6 py-3 rounded-xl"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           )}
         </div>
 

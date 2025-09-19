@@ -47,7 +47,39 @@ export class AIService {
         response_format: { type: "json_object" },
       });
 
-      return JSON.parse(response.choices[0].message.content || "{}");
+      const content = response.choices[0].message.content || "{}";
+      try {
+        const parsed = JSON.parse(content);
+        
+        // Validate analysis response structure and provide fallbacks
+        if (!parsed.questions || !Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+          console.warn("AI returned invalid analysis structure, using fallback questions");
+          return {
+            keyFindings: parsed.keyFindings || [],
+            potentialConditions: parsed.potentialConditions || [],
+            urgencyLevel: parsed.urgencyLevel || 'medium',
+            questions: [
+              "How long have you been experiencing these symptoms?",
+              "What makes your symptoms better or worse?",
+              "Are you currently taking any medications for this condition?"
+            ]
+          };
+        }
+        return parsed;
+      } catch (parseError) {
+        console.error("AI response parsing failed - response length:", content.length);
+        // Return fallback analysis if parsing fails
+        return {
+          keyFindings: ["Unable to analyze report automatically"],
+          potentialConditions: ["General health consultation recommended"],
+          urgencyLevel: 'medium' as const,
+          questions: [
+            "What are your main health concerns from this report?",
+            "How long have you been experiencing any symptoms?",
+            "Are you currently taking any medications?"
+          ]
+        };
+      }
     } catch (error) {
       console.error("Error analyzing report:", error);
       throw new Error("Failed to analyze medical report");
@@ -85,7 +117,33 @@ export class AIService {
         response_format: { type: "json_object" },
       });
 
-      return JSON.parse(response.choices[0].message.content || "{}");
+      const content = response.choices[0].message.content || "{}";
+      try {
+        const parsed = JSON.parse(content);
+        
+        // Validate report response structure and provide fallbacks
+        if (!parsed.content || typeof parsed.content !== 'string') {
+          console.warn("AI returned invalid report structure, using fallback");
+          return {
+            content: "Unable to generate detailed report at this time. Please consult with your healthcare provider for a comprehensive analysis of your medical report.",
+            recommendations: ["Consult with your healthcare provider", "Keep track of your symptoms", "Follow up as recommended"]
+          };
+        }
+        
+        // Ensure recommendations is an array
+        if (!parsed.recommendations || !Array.isArray(parsed.recommendations)) {
+          parsed.recommendations = [];
+        }
+        
+        return parsed;
+      } catch (parseError) {
+        console.error("AI response parsing failed - response length:", content.length);
+        // Return fallback report if parsing fails
+        return {
+          content: "Unable to generate detailed report due to a technical issue. Please consult with your healthcare provider for a comprehensive analysis of your medical report.",
+          recommendations: ["Consult with your healthcare provider", "Keep track of your symptoms", "Follow up as recommended"]
+        };
+      }
     } catch (error) {
       console.error("Error generating personal report:", error);
       throw new Error("Failed to generate personal report");
@@ -123,7 +181,33 @@ export class AIService {
         response_format: { type: "json_object" },
       });
 
-      return JSON.parse(response.choices[0].message.content || "{}");
+      const content = response.choices[0].message.content || "{}";
+      try {
+        const parsed = JSON.parse(content);
+        
+        // Validate report response structure and provide fallbacks
+        if (!parsed.content || typeof parsed.content !== 'string') {
+          console.warn("AI returned invalid report structure, using fallback");
+          return {
+            content: "Unable to generate detailed report at this time. Please consult with your healthcare provider for a comprehensive analysis of your medical report.",
+            recommendations: ["Consult with your healthcare provider", "Keep track of your symptoms", "Follow up as recommended"]
+          };
+        }
+        
+        // Ensure recommendations is an array
+        if (!parsed.recommendations || !Array.isArray(parsed.recommendations)) {
+          parsed.recommendations = [];
+        }
+        
+        return parsed;
+      } catch (parseError) {
+        console.error("AI response parsing failed - response length:", content.length);
+        // Return fallback report if parsing fails
+        return {
+          content: "Unable to generate detailed report due to a technical issue. Please consult with your healthcare provider for a comprehensive analysis of your medical report.",
+          recommendations: ["Consult with your healthcare provider", "Keep track of your symptoms", "Follow up as recommended"]
+        };
+      }
     } catch (error) {
       console.error("Error generating professional report:", error);
       throw new Error("Failed to generate professional report");

@@ -19,10 +19,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid report type" }, { status: 400 });
     }
 
-    // Add appropriate disclaimer
-    const disclaimer = "**DISCLAIMER: This is an AI-generated report and should not replace professional medical advice. Please consult with qualified healthcare providers for medical decisions.**";
-    
-    generatedReport.content += `\n\n${disclaimer}`;
+    // Add appropriate disclaimer - handled in UI for proper styling
 
     return NextResponse.json({ report: generatedReport });
   } catch (error: any) {
