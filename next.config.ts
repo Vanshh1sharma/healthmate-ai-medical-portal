@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
       }
     }
   },
-  // Configure for Replit environment - allow all hosts
+  // Configure for Replit environment
   async headers() {
     return [
       {
