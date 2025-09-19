@@ -33,11 +33,11 @@ export default function RootLayout({
         {/* Global Navigation */}
         <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/90 border-b border-blue-200">
           <div className="mx-auto max-w-7xl px-6 py-2 flex items-center justify-between">
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center group">
               <img 
                 src="/healthmate-new-logo.png" 
                 alt="HealthMate Logo" 
-                className="h-12 w-auto object-contain hover:scale-105 transition-all duration-300"
+                className="h-20 w-auto object-contain filter drop-shadow-lg hover:drop-shadow-xl hover:scale-105 transition-all duration-300 brightness-110 contrast-105"
               />
             </Link>
             <nav className="hidden md:flex items-center gap-8">
