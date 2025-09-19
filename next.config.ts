@@ -23,7 +23,15 @@ const nextConfig: NextConfig = {
         loaders: [LOADER]
       }
     }
-  }
+  },
+  // Configure for Replit environment - allow all hosts
+  experimental: {
+    allowedOrigins: ['*'],
+  },
+  // Enable host configuration for development
+  devIndicators: {
+    buildActivity: true,
+  },
 };
 
 export default nextConfig;
