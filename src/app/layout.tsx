@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body className="antialiased">
         <ErrorReporter />
         <Script
@@ -31,20 +31,19 @@ export default function RootLayout({
           data-custom-data='{"appName": "YourApp", "version": "1.0.0", "greeting": "hi"}'
         />
         {/* Global Navigation */}
-        <header className="sticky top-0 z-40 backdrop-blur-xl bg-black/20 border-b border-white/10">
+        <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/90 border-b border-blue-200">
           <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
               <div className="relative">
-                <div className="size-8 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 shadow-[0_0_32px_rgba(16,185,129,0.4)]" />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-400/60 to-cyan-500/60 blur-md" />
+                <div className="size-8 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-[0_0_32px_rgba(59,130,246,0.4)]" />
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/60 to-blue-600/60 blur-md" />
               </div>
-              <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">HealthMate</span>
+              <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">HealthMate</span>
             </Link>
             <nav className="hidden md:flex items-center gap-8">
-              <Link href="/#features" className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-300">Features</Link>
-              <Link href="/patient" className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-300">Patient Portal</Link>
-              <Link href="/doctor" className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-300">Doctor Tools</Link>
-              <Link href="/patient" className="px-4 py-2 text-sm font-medium bg-white/10 hover:bg-white/15 text-white rounded-xl border border-white/25 hover:border-white/35 backdrop-blur-xl transition-all duration-300">Get Started</Link>
+              <Link href="/#features" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-300">Features</Link>
+              <Link href="/patient" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-300">Patient Portal</Link>
+              <Link href="/patient" className="px-4 py-2 text-sm font-medium bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl border border-blue-300 hover:border-blue-400 backdrop-blur-xl transition-all duration-300">Get Started</Link>
             </nav>
           </div>
         </header>
