@@ -33,7 +33,9 @@ const nextConfig: NextConfig = {
     '*.replit.dev', 
     '*.spock.replit.dev',
     '*.riker.replit.dev',
+    '*.picard.replit.dev',
     'a3208534-89e5-4f06-9eb7-60199546c3b9-00-24e8bgfkf1k4a.riker.replit.dev',
+    '56f36d0f-5408-4e49-a118-1919cf61ddfa-00-22umsk2ovreqn.picard.replit.dev',
     '127.0.0.1',
     'localhost'
   ],
