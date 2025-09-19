@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web"]
+modules = ["nodejs-20", "web", "bun"]
 
 [nix]
 channel = "stable-25_05"
@@ -36,7 +36,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 33677
+localPort = 36709
 externalPort = 3000
 
 [deployment]

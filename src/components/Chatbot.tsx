@@ -59,6 +59,26 @@ export default function Chatbot() {
     utter.pitch = 1;
     utter.lang = detectedLanguage === 'hi' ? 'hi-IN' : 'en-US';
     
+    // Select appropriate voice for the language
+    const voices = window.speechSynthesis.getVoices();
+    if (detectedLanguage === 'hi') {
+      // Try to find a Hindi voice
+      const hindiVoice = voices.find(voice => 
+        voice.lang.startsWith('hi') || voice.name.toLowerCase().includes('hindi')
+      );
+      if (hindiVoice) {
+        utter.voice = hindiVoice;
+      }
+    } else {
+      // Try to find an English voice
+      const englishVoice = voices.find(voice => 
+        voice.lang.startsWith('en') && (voice.name.toLowerCase().includes('us') || voice.name.toLowerCase().includes('uk'))
+      );
+      if (englishVoice) {
+        utter.voice = englishVoice;
+      }
+    }
+    
     utter.onstart = () => setSpeaking(true);
     utter.onend = () => setSpeaking(false);
     utter.onerror = () => setSpeaking(false);

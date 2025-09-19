@@ -34,16 +34,11 @@ export default function RootLayout({
         <header className="sticky top-0 z-40 backdrop-blur-xl bg-gradient-to-r from-white/95 via-blue-50/90 to-white/95 border-b border-blue-200/50 shadow-sm">
           <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
             <Link href="/" className="flex items-center group">
-              <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 rounded-xl opacity-20 blur-sm group-hover:opacity-40 transition-all duration-300"></div>
-                <div className="relative bg-white/80 p-2 rounded-xl border border-blue-200/50 shadow-sm">
-                  <img 
-                    src="/healthmate-new-logo.png" 
-                    alt="HealthMate Logo" 
-                    className="h-12 w-auto object-contain filter drop-shadow-sm group-hover:scale-105 transition-all duration-300"
-                  />
-                </div>
-              </div>
+              <img 
+                src="/healthmate-new-logo.png" 
+                alt="HealthMate Logo" 
+                className="h-12 w-auto object-contain filter drop-shadow-sm group-hover:scale-105 transition-all duration-300"
+              />
             </Link>
             <nav className="hidden md:flex items-center gap-2">
               <Link href="/#features" className="relative px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-all duration-300 rounded-lg hover:bg-blue-50 group">

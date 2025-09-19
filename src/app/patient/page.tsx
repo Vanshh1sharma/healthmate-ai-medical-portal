@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import * as pdfjsLib from "pdfjs-dist";
+import jsPDF from "jspdf";
 
 interface MedicalAnalysis {
   keyFindings: string[];
@@ -38,6 +40,79 @@ export default function PatientDashboard() {
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [consentGiven, setConsentGiven] = useState(false);
 
+  // PDF Download Function
+  const downloadPDF = () => {
+    if (!finalReport) return;
+    
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const margin = 20;
+    const maxLineWidth = pageWidth - (margin * 2);
+    let yPosition = margin;
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    const title = reportType === 'personal' ? 'Personal Health Report' : 'Professional Medical Analysis';
+    doc.text(title, pageWidth / 2, yPosition, { align: 'center' });
+    yPosition += 15;
+    
+    // Date
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, { align: 'center' });
+    yPosition += 15;
+    
+    // Content
+    doc.setFontSize(12);
+    const contentLines = doc.splitTextToSize(finalReport.content, maxLineWidth);
+    
+    contentLines.forEach((line: string) => {
+      if (yPosition > pageHeight - margin) {
+        doc.addPage();
+        yPosition = margin;
+      }
+      doc.text(line, margin, yPosition);
+      yPosition += 6;
+    });
+    
+    // Recommendations
+    if (finalReport.recommendations && finalReport.recommendations.length > 0) {
+      yPosition += 10;
+      if (yPosition > pageHeight - margin) {
+        doc.addPage();
+        yPosition = margin;
+      }
+      
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Key Recommendations:', margin, yPosition);
+      yPosition += 10;
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      
+      finalReport.recommendations.forEach((rec, idx) => {
+        if (yPosition > pageHeight - margin) {
+          doc.addPage();
+          yPosition = margin;
+        }
+        
+        const bulletPoint = `${idx + 1}. ${rec}`;
+        const recLines = doc.splitTextToSize(bulletPoint, maxLineWidth);
+        recLines.forEach((line: string) => {
+          doc.text(line, margin, yPosition);
+          yPosition += 6;
+        });
+        yPosition += 3;
+      });
+    }
+    
+    // Save the PDF
+    doc.save(`HealthMate_${reportType}_Report_${new Date().toLocaleDateString().replace(/\//g, '-')}.pdf`);
+  };
+
   const onFile = async (file?: File) => {
     if (!file) return;
     setFileName(file.name);
@@ -48,24 +123,14 @@ export default function PatientDashboard() {
         setParsing(true);
         console.log('Starting PDF processing for file:', file.name, 'Size:', file.size, 'bytes');
         
-        // Dynamically import PDF.js only when needed and on client side
-        const pdfjsLib = await import("pdfjs-dist");
-        console.log('PDF.js version:', (pdfjsLib as any).version);
-        
-        // Configure worker with multiple fallback options
-        const workerSources = [
-          `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${(pdfjsLib as any).version}/pdf.worker.min.js`,
-          `https://unpkg.com/pdfjs-dist@${(pdfjsLib as any).version}/build/pdf.worker.min.js`,
-          `/pdf.worker.min.js` // Fallback to local file if available
-        ];
-        
-        (pdfjsLib as any).GlobalWorkerOptions.workerSrc = workerSources[0];
+        // Configure PDF.js worker with local file
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
+        console.log('PDF.js version:', pdfjsLib.version);
 
         const buffer = await file.arrayBuffer();
         console.log('File buffer size:', buffer.byteLength, 'bytes');
         
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const loadingTask = (pdfjsLib as any).getDocument({ 
+        const loadingTask = pdfjsLib.getDocument({ 
           data: new Uint8Array(buffer),
           verbosity: 0, // Reduce console noise
           stopAtErrors: false // Continue processing even with minor errors
@@ -683,9 +748,28 @@ export default function PatientDashboard() {
                         </div>
                         
                         <div className="prose prose-lg max-w-none">
-                          <div className="bg-gradient-to-r from-blue-50/50 to-purple-50/50 rounded-2xl p-6 border border-blue-200/30 mb-6">
-                            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed text-lg font-medium tracking-wide [&>p]:mb-4 [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:text-blue-700 [&>h1]:mb-4 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:text-purple-700 [&>h2]:mb-3 [&>h3]:text-lg [&>h3]:font-semibold [&>h3]:text-gray-700 [&>h3]:mb-2 [&>ul]:ml-4 [&>li]:mb-2">
-                              {finalReport.content}
+                          <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-lg mb-6">
+                            <div className="text-gray-800 leading-relaxed">
+                              {finalReport.content.split('\n').map((paragraph, idx) => {
+                                if (paragraph.trim().startsWith('•') || paragraph.trim().startsWith('-') || paragraph.trim().startsWith('*')) {
+                                  return (
+                                    <div key={idx} className="flex items-start gap-3 mb-3">
+                                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                                      <p className="text-gray-700 leading-relaxed">
+                                        {paragraph.trim().replace(/^[•\-\*]\s*/, '')}
+                                      </p>
+                                    </div>
+                                  );
+                                }
+                                if (paragraph.trim()) {
+                                  return (
+                                    <p key={idx} className="mb-4 text-gray-700 leading-relaxed">
+                                      {paragraph}
+                                    </p>
+                                  );
+                                }
+                                return <br key={idx} />;
+                              })}
                             </div>
                           </div>
                         </div>
@@ -807,23 +891,13 @@ export default function PatientDashboard() {
                 
                 <div className="grid md:grid-cols-3 gap-4">
                   <Button 
-                    onClick={() => {
-                      const blob = new Blob([finalReport.content], { type: 'text/plain' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `HealthMate_${reportType}_Report_${new Date().toLocaleDateString().replace(/\//g, '-')}.txt`;
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      URL.revokeObjectURL(url);
-                    }}
+                    onClick={downloadPDF}
                     className="group bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-semibold px-6 py-5 rounded-2xl border-0 shadow-[0_8px_32px_rgba(34,197,94,0.35)] hover:shadow-[0_12px_48px_rgba(34,197,94,0.45)] transform hover:scale-105 transition-all duration-300"
                   >
                     <div className="flex flex-col items-center gap-2">
-                      <div className="text-3xl group-hover:animate-bounce">📥</div>
-                      <span className="text-lg">Download</span>
-                      <span className="text-sm opacity-90">Save report file</span>
+                      <div className="text-3xl group-hover:animate-bounce">📄</div>
+                      <span className="text-lg">Download PDF</span>
+                      <span className="text-sm opacity-90">Save as PDF file</span>
                     </div>
                   </Button>
                   
