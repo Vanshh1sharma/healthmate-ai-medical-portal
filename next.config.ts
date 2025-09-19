@@ -1,7 +1,4 @@
 import type { NextConfig } from "next";
-import path from "node:path";
-
-const LOADER = path.resolve(__dirname, 'src/visual-edits/component-tagger-loader.js');
 
 const nextConfig: NextConfig = {
   images: {
@@ -16,15 +13,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  outputFileTracingRoot: path.resolve(__dirname, '../../'),
-  turbopack: {
-    rules: {
-      "*.{jsx,tsx}": {
-        loaders: [LOADER]
-      }
-    }
-  },
-  // Configure for Replit environment
+  // Remove turbopack to avoid compatibility issues in Replit
+  // Configure for Replit environment - allow iframe embedding
   async headers() {
     return [
       {
@@ -37,6 +27,10 @@ const nextConfig: NextConfig = {
         ]
       }
     ]
+  },
+  // Enable experimental features for React 19 compatibility
+  experimental: {
+    // Disable React Strict Mode in dev if needed for compatibility
   }
 };
 
