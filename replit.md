@@ -32,12 +32,17 @@ The project is configured to run on port 5000 in the Replit environment:
 
 ## Recent Changes (September 19, 2025)
 - Imported from GitHub and configured for Replit environment
-- Removed Turbopack due to build compatibility issues
-- Configured Next.js headers for iframe compatibility
+- Installed dependencies with --legacy-peer-deps for React 19 compatibility
+- Removed Turbopack due to build compatibility issues in Replit
+- Configured Next.js headers for iframe compatibility and cross-origin requests
 - Set up autoscale deployment configuration
-- Created workflow for development server on port 5000
+- Created workflow for development server on port 5000 with proper host binding
+- Updated package.json scripts to bind to 0.0.0.0:5000 for Replit environment
+- Added allowedDevOrigins configuration for Replit proxy compatibility
 
 ## Development Environment
 - Node.js v20.19.3
 - Package manager: npm (with legacy peer deps for React 19 compatibility)
 - Build system: Next.js with TypeScript compilation
+- Development server: Configured for port 5000 with host 0.0.0.0
+- Status: ✅ Running successfully in Replit environment

@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
     ],
   },
   // Remove turbopack to avoid compatibility issues in Replit
-  // Configure for Replit environment - allow iframe embedding
+  // Configure for Replit environment - allow iframe embedding and cross-origin requests
   async headers() {
     return [
       {
@@ -28,6 +28,8 @@ const nextConfig: NextConfig = {
       }
     ]
   },
+  // Allow dev origins from Replit proxy
+  allowedDevOrigins: ['*.replit.dev'],
   // Enable experimental features for React 19 compatibility
   experimental: {
     // Disable React Strict Mode in dev if needed for compatibility
