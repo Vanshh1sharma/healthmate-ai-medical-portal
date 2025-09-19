@@ -25,13 +25,19 @@ const nextConfig: NextConfig = {
     }
   },
   // Configure for Replit environment - allow all hosts
-  experimental: {
-    allowedOrigins: ['*'],
-  },
-  // Enable host configuration for development
-  devIndicators: {
-    buildActivity: true,
-  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'ALLOWALL'
+          }
+        ]
+      }
+    ]
+  }
 };
 
 export default nextConfig;
