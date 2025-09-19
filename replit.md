@@ -1,7 +1,7 @@
 # HealthMate - AI Health Companion
 
 ## Project Overview
-HealthMate is a modern healthcare platform built with Next.js, featuring AI-powered medical report summaries, doctor tools, and a voice-enabled assistant. The application provides both patient and doctor dashboards with intelligent health analysis capabilities.
+HealthMate is a modern healthcare platform built with Next.js, featuring AI-powered medical report summaries and a voice-enabled assistant. The application provides a patient dashboard with intelligent health analysis capabilities.
 
 ## Architecture
 - **Frontend**: Next.js 15.3.5 with TypeScript
@@ -12,11 +12,11 @@ HealthMate is a modern healthcare platform built with Next.js, featuring AI-powe
 
 ## Key Features
 - AI-powered medical report summarization
-- Patient and doctor dashboard interfaces
+- Patient dashboard interface
 - Voice-enabled chatbot assistant
 - File upload for medical reports (PDF/images)
-- Medical note verification system
-- Responsive design with dark theme
+- Health insights and recommendations
+- Responsive design with white and blue theme
 
 ## Development Setup
 The project is configured to run on port 5000 in the Replit environment:

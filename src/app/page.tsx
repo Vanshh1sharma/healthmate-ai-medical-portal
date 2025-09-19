@@ -100,7 +100,7 @@ export default function Home() {
                 <span className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 bg-clip-text text-transparent"> Companion</span>
               </h1>
               <p ref={subtitleRef} className="text-lg sm:text-xl text-gray-600 max-w-2xl leading-relaxed font-light">
-                Transform complex medical reports into clear insights. Verify clinical notes with precision. Get instant answers to health questions — all powered by advanced AI in a secure, professional environment.
+                Transform complex medical reports into clear insights. Get instant answers to health questions with personalized recommendations — all powered by advanced AI in a secure, professional environment.
               </p>
             </div>
             <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4 items-start">
@@ -290,13 +290,13 @@ export default function Home() {
             icon="📊"
           />
           <FeatureCard 
-            title="Clinical Verification" 
-            desc="Professional-grade note validation with quality scoring and comprehensive accuracy checks."
+            title="Health Insights" 
+            desc="Personalized health analysis with key metrics tracking and trend identification for better health understanding."
             icon="🔍"
           />
           <FeatureCard 
             title="Intelligent Assistant" 
-            desc="24/7 medical query support with voice interaction and evidence-based responses."
+            desc="24/7 medical query support with voice interaction and evidence-based health guidance."
             icon="🤖"
           />
         </div>

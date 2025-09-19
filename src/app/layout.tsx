@@ -8,7 +8,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "HealthMate — Your AI Health Companion",
-  description: "HealthMate: Modern healthcare platform with AI summaries, doctor tools, and a voice-enabled assistant.",
+  description: "HealthMate: Modern healthcare platform with AI summaries and voice-enabled assistant for patients.",
 };
 
 export default function RootLayout({
