@@ -59,19 +59,36 @@ export default function Home() {
               {/* Primary CTA */}
               <Link href="/patient">
                 <Button className="group relative bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold px-8 py-4 rounded-2xl shadow-[0_8px_32px_rgba(59,130,246,0.35)] hover:shadow-[0_12px_48px_rgba(59,130,246,0.45)] transition-all duration-300 border-0 text-lg">
-                  <span className="relative z-10">Get Started</span>
+                  <span className="relative z-10">🚀 Transform My Health Report</span>
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/20 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </Button>
               </Link>
               
-              {/* Patient Problems Examples */}
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-gray-700">Common health concerns:</span>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs border border-blue-200">Blood test results</span>
-                  <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs border border-blue-200">Chest pain</span>
-                  <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs border border-blue-200">Persistent headaches</span>
-                  <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs border border-blue-200">Fatigue</span>
+              {/* Patient Portal with Previous Issues */}
+              <div className="flex flex-col gap-3">
+                <Link href="/patient">
+                  <Button className="bg-gradient-to-r from-purple-100 to-blue-100 hover:from-purple-200 hover:to-blue-200 text-purple-700 border border-purple-300 hover:border-purple-400 backdrop-blur-xl rounded-xl px-6 py-3 transition-all duration-300 font-medium flex items-center gap-2">
+                    <span>📋 Patient Portal</span>
+                  </Button>
+                </Link>
+                
+                {/* Previous Issues */}
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-medium text-gray-600">Your recent health concerns:</span>
+                  <div className="flex flex-wrap gap-1">
+                    <span className="px-2 py-1 bg-amber-50 text-amber-700 rounded-md text-xs border border-amber-200 flex items-center gap-1">
+                      <div className="w-2 h-2 bg-amber-400 rounded-full"></div>
+                      Blood pressure analysis
+                    </span>
+                    <span className="px-2 py-1 bg-red-50 text-red-700 rounded-md text-xs border border-red-200 flex items-center gap-1">
+                      <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+                      Chest discomfort
+                    </span>
+                    <span className="px-2 py-1 bg-green-50 text-green-700 rounded-md text-xs border border-green-200 flex items-center gap-1">
+                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                      Routine checkup
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
