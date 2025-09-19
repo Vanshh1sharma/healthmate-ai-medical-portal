@@ -93,6 +93,7 @@ export default function Chatbot() {
         },
         body: JSON.stringify({ 
           question, 
+          language: detectedLanguage,
           context: 'comprehensive_health'
         }),
       });
@@ -103,10 +104,7 @@ export default function Chatbot() {
 
       const data = await response.json();
       
-      // Update detected language if returned by API
-      if (data.detectedLanguage && data.detectedLanguage !== detectedLanguage) {
-        setDetectedLanguage(data.detectedLanguage);
-      }
+      // Use manually selected language instead of auto-detection
       
       return data.response || (detectedLanguage === 'hi' 
         ? "माफ करें, मैं अभी आपकी मदद नहीं कर सकता। कृपया बाद में कोशिश करें।"
@@ -154,7 +152,7 @@ export default function Chatbot() {
             <div className="bg-blue-50 p-4 border-b border-blue-200 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-20 h-20 bg-white/30 rounded-bl-full"></div>
               <div className="relative flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-white text-lg shadow-lg">
+                <div className="text-2xl">
                   👨‍⚕️
                 </div>
                 <div className="flex-1">
@@ -166,8 +164,22 @@ export default function Chatbot() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium border border-green-200">
-                    {detectedLanguage === 'hi' ? 'हिं' : 'EN'}
+                  {/* Language Toggle Switch */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-gray-600">EN</span>
+                    <button
+                      onClick={() => setDetectedLanguage(detectedLanguage === 'hi' ? 'en' : 'hi')}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                        detectedLanguage === 'hi' ? 'bg-blue-500' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                          detectedLanguage === 'hi' ? 'translate-x-5' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                    <span className="text-xs text-gray-600">हिं</span>
                   </div>
                   <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                     {detectedLanguage === 'hi' ? 'ऑनलाइन' : 'Online'}
