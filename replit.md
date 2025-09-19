@@ -42,11 +42,13 @@ The project is configured to run on port 5000 in the Replit environment:
 - ✅ Logo size increased for better visibility and branding
 
 ## Latest Enhancements (September 19, 2025)
-- ✅ **Multilingual Support**: Added Hindi language support to the AI chatbot
-  - Language toggle between English (EN) and Hindi (हिं) in chatbot interface
-  - Voice recognition supports both English (en-US) and Hindi (hi-IN)
-  - Text-to-speech speaks responses in the selected language
-  - Localized UI elements and messages based on language selection
+- ✅ **Comprehensive Health AI Assistant**: Complete chatbot enhancement with intelligent health guidance
+  - **Smart Language Detection**: Automatic language detection (English/Hindi) without manual selection
+  - **Expanded Health Coverage**: AI handles all health topics (diseases, medicines, symptoms, lifestyle)
+  - **Chat History Preservation**: Maintains conversation history across language changes
+  - **Enhanced UI/UX**: Doctor emojis (👨‍⚕️) replace robot icons, clean interface without visual distractions
+  - **Voice Integration**: Language-adaptive voice recognition and text-to-speech
+  - **AI-Powered Responses**: Gemini AI provides contextual medical guidance in detected language
 - ✅ **Enhanced Voice Controls**: Improved voice interaction features
   - Stop Speaking button appears during AI response playback
   - Better voice input handling with language-specific recognition

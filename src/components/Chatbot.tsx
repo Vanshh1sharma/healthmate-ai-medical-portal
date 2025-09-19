@@ -5,20 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([
-    { role: "assistant", content: "Hi! I'm HealthMate. Ask me about your medicines. I can explain usage, side effects, and precautions." },
-  ]);
+  const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [language, setLanguage] = useState<'en' | 'hi'>('en');
+  const [detectedLanguage, setDetectedLanguage] = useState<'en' | 'hi'>('en');
   const recognitionRef = useRef<any>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const initialMessageSetRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -26,7 +24,7 @@ export default function Chatbot() {
     if (SR) {
       const rec = new SR();
       rec.continuous = false;
-      rec.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+      rec.lang = detectedLanguage === 'hi' ? 'hi-IN' : 'en-US';
       rec.interimResults = false;
       rec.onresult = (e: any) => {
         const text = Array.from(e.results).map((r: any) => r[0].transcript).join(" ");
@@ -36,16 +34,19 @@ export default function Chatbot() {
       rec.onend = () => setListening(false);
       recognitionRef.current = rec;
     }
-  }, [language]);
+  }, [detectedLanguage]);
 
   useEffect(() => {
-    // Update initial message based on language
-    const initialMessage = language === 'hi' 
-      ? "नमस्ते! मैं HealthMate हूँ। मुझसे अपनी दवाओं के बारे में पूछें। मैं उपयोग, साइड इफेक्ट्स और सावधानियों के बारे में बता सकता हूँ।"
-      : "Hi! I'm HealthMate. Ask me about your medicines. I can explain usage, side effects, and precautions.";
-    
-    setMessages([{ role: "assistant", content: initialMessage }]);
-  }, [language]);
+    // Only set initial message on first mount, preserve chat history on language changes
+    if (!initialMessageSetRef.current) {
+      const initialMessage = detectedLanguage === 'hi' 
+        ? "नमस्ते! मैं HealthMate हूँ। मुझसे किसी भी स्वास्थ्य समस्या, दवा, बीमारी या लक्षण के बारे में पूछें। मैं आपकी मदद करूंगा।"
+        : "Hi! I'm HealthMate. Ask me about any health issue, medicine, disease, or symptom you're experiencing. I'm here to help you.";
+      
+      setMessages([{ role: "assistant", content: initialMessage }]);
+      initialMessageSetRef.current = true;
+    }
+  }, [detectedLanguage]);
 
   const speak = (text: string) => {
     if (typeof window === "undefined") return;
@@ -56,7 +57,7 @@ export default function Chatbot() {
     const utter = new SpeechSynthesisUtterance(text);
     utter.rate = 1;
     utter.pitch = 1;
-    utter.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+    utter.lang = detectedLanguage === 'hi' ? 'hi-IN' : 'en-US';
     
     utter.onstart = () => setSpeaking(true);
     utter.onend = () => setSpeaking(false);
@@ -92,8 +93,7 @@ export default function Chatbot() {
         },
         body: JSON.stringify({ 
           question, 
-          language: language,
-          context: 'medical_chat'
+          context: 'comprehensive_health'
         }),
       });
 
@@ -102,12 +102,18 @@ export default function Chatbot() {
       }
 
       const data = await response.json();
-      return data.response || (language === 'hi' 
+      
+      // Update detected language if returned by API
+      if (data.detectedLanguage && data.detectedLanguage !== detectedLanguage) {
+        setDetectedLanguage(data.detectedLanguage);
+      }
+      
+      return data.response || (detectedLanguage === 'hi' 
         ? "माफ करें, मैं अभी आपकी मदद नहीं कर सकता। कृपया बाद में कोशिश करें।"
         : "Sorry, I cannot help you right now. Please try again later.");
     } catch (error) {
       console.error('Error getting AI response:', error);
-      return language === 'hi'
+      return detectedLanguage === 'hi'
         ? "माफ करें, तकनीकी समस्या के कारण मैं अभी जवाब नहीं दे सकता। कृपया फिर से कोशिश करें।"
         : "Sorry, I'm experiencing technical difficulties. Please try again.";
     }
@@ -129,7 +135,7 @@ export default function Chatbot() {
     } catch (error) {
       const errorMsg = { 
         role: "assistant" as const, 
-        content: language === 'hi'
+        content: detectedLanguage === 'hi'
           ? "माफ करें, मुझे कोई समस्या हुई है। कृपया फिर से कोशिश करें।"
           : "Sorry, I encountered an error. Please try again."
       };
@@ -149,29 +155,22 @@ export default function Chatbot() {
               <div className="absolute top-0 right-0 w-20 h-20 bg-white/30 rounded-bl-full"></div>
               <div className="relative flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-white text-lg shadow-lg">
-                  🤖
+                  👨‍⚕️
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-bold text-blue-700">
                     HealthMate Assistant
                   </h3>
                   <div className="flex items-center gap-2 text-gray-600 text-xs">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                    <span>{language === 'hi' ? 'AI-संचालित चिकित्सा मार्गदर्शन' : 'AI-powered medical guidance'}</span>
+                    <span>{detectedLanguage === 'hi' ? 'AI-संचालित चिकित्सा मार्गदर्शन' : 'AI-powered comprehensive health guidance'}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Select value={language} onValueChange={(value: 'en' | 'hi') => setLanguage(value)}>
-                    <SelectTrigger className="w-20 h-8 text-xs border-blue-300">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">EN</SelectItem>
-                      <SelectItem value="hi">हिं</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium border border-green-200">
+                    {detectedLanguage === 'hi' ? 'हिं' : 'EN'}
+                  </div>
                   <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                    {language === 'hi' ? 'ऑनलाइन' : 'Online'}
+                    {detectedLanguage === 'hi' ? 'ऑनलाइन' : 'Online'}
                   </div>
                 </div>
               </div>
@@ -186,7 +185,7 @@ export default function Chatbot() {
                       <div className="flex items-start gap-2 max-w-[85%]">
                         {m.role === "assistant" && (
                           <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm flex-shrink-0 mt-1">
-                            🤖
+                            👨‍⚕️
                           </div>
                         )}
                         <div className={`rounded-2xl px-4 py-3 text-sm font-medium leading-relaxed shadow-lg ${
@@ -212,9 +211,9 @@ export default function Chatbot() {
                 <div className="flex items-center gap-2 mb-3">
                   <div className="flex-1 relative">
                     <Input
-                      placeholder={language === 'hi' 
-                        ? "दवाओं, साइड इफेक्ट्स, खुराक के बारे में पूछें..."
-                        : "Ask me about medicines, side effects, dosages..."}
+                      placeholder={detectedLanguage === 'hi' 
+                        ? "किसी भी स्वास्थ्य समस्या, दवा, बीमारी के बारे में पूछें..."
+                        : "Ask about any health issue, medicine, disease, symptoms..."}
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && !loading && onSend()}
@@ -245,19 +244,19 @@ export default function Chatbot() {
                           >
                             {listening ? (
                               <span className="flex items-center gap-1">
-                                🎙️ <span className="text-xs">{language === 'hi' ? 'सुन रहा...' : 'Listening...'}</span>
+                                🎙️ <span className="text-xs">{detectedLanguage === 'hi' ? 'सुन रहा...' : 'Listening...'}</span>
                               </span>
                             ) : (
                               <span className="flex items-center gap-1">
-                                🎤 <span className="text-xs">{language === 'hi' ? 'आवाज़' : 'Voice'}</span>
+                                🎤 <span className="text-xs">{detectedLanguage === 'hi' ? 'आवाज़' : 'Voice'}</span>
                               </span>
                             )}
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent className="bg-blue-600 text-white border-0">
                           {listening 
-                            ? (language === 'hi' ? 'आवाज़ इनपुट बंद करने के लिए क्लिक करें' : 'Click to stop voice input') 
-                            : (language === 'hi' ? 'आवाज़ इनपुट का उपयोग करने के लिए क्लिक करें' : 'Click to use voice input')}
+                            ? (detectedLanguage === 'hi' ? 'आवाज़ इनपुट बंद करने के लिए क्लिक करें' : 'Click to stop voice input') 
+                            : (detectedLanguage === 'hi' ? 'आवाज़ इनपुट का उपयोग करने के लिए क्लिक करें' : 'Click to use voice input')}
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -273,12 +272,12 @@ export default function Chatbot() {
                               className="border-2 border-red-200 text-red-600 bg-red-50 animate-pulse"
                             >
                               <span className="flex items-center gap-1">
-                                🔇 <span className="text-xs">{language === 'hi' ? 'रोकें' : 'Stop'}</span>
+                                🔇 <span className="text-xs">{detectedLanguage === 'hi' ? 'रोकें' : 'Stop'}</span>
                               </span>
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent className="bg-red-600 text-white border-0">
-                            {language === 'hi' ? 'बोलना बंद करें' : 'Stop speaking'}
+                            {detectedLanguage === 'hi' ? 'बोलना बंद करें' : 'Stop speaking'}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -293,12 +292,12 @@ export default function Chatbot() {
                     <span className="flex items-center gap-2">
                       {loading ? (
                         <>
-                          <span>{language === 'hi' ? 'प्रतीक्षा...' : 'Sending...'}</span>
+                          <span>{detectedLanguage === 'hi' ? 'प्रतीक्षा...' : 'Sending...'}</span>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         </>
                       ) : (
                         <>
-                          <span>{language === 'hi' ? 'भेजें' : 'Send'}</span>
+                          <span>{detectedLanguage === 'hi' ? 'भेजें' : 'Send'}</span>
                           <span className="text-lg">📤</span>
                         </>
                       )}
@@ -311,7 +310,7 @@ export default function Chatbot() {
                   <div className="flex items-start gap-2">
                     <div className="text-blue-600 text-sm flex-shrink-0">⚠️</div>
                     <p className="text-xs text-blue-700 leading-relaxed">
-                      {language === 'hi'
+                      {detectedLanguage === 'hi'
                         ? 'यह AI सहायक केवल शैक्षिक जानकारी प्रदान करता है और पेशेवर चिकित्सा सलाह का विकल्प नहीं है। चिकित्सा निर्णयों के लिए हमेशा स्वास्थ्य सेवा प्रदाताओं से सलाह लें।'
                         : 'This AI assistant provides educational information only and is not a substitute for professional medical advice. Always consult healthcare providers for medical decisions.'}
                     </p>
@@ -330,17 +329,14 @@ export default function Chatbot() {
       >
         <span className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-            {open ? '✕' : '🤖'}
+            {open ? '✕' : '👨‍⚕️'}
           </div>
           <span className="font-bold">
             {open 
-              ? (language === 'hi' ? 'सहायक बंद करें' : 'Close Assistant') 
-              : (language === 'hi' ? 'HealthMate से पूछें' : 'Ask HealthMate')}
+              ? (detectedLanguage === 'hi' ? 'सहायक बंद करें' : 'Close Assistant') 
+              : (detectedLanguage === 'hi' ? 'HealthMate से पूछें' : 'Ask HealthMate')}
           </span>
         </span>
-        {!open && (
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-600 rounded-full animate-pulse border-2 border-white shadow-lg"></div>
-        )}
       </Button>
 
       {/* Custom Scrollbar Styles */}
