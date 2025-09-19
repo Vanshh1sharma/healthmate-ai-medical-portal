@@ -35,8 +35,11 @@ export default function RootLayout({
           <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
               <div className="relative">
-                <div className="size-8 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-[0_0_32px_rgba(59,130,246,0.4)]" />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/60 to-blue-600/60 blur-md" />
+                <img 
+                  src="/healthmate-logo.jpeg" 
+                  alt="HealthMate Logo" 
+                  className="size-8 rounded-xl object-cover shadow-[0_0_32px_rgba(59,130,246,0.4)]"
+                />
               </div>
               <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">HealthMate</span>
             </Link>
