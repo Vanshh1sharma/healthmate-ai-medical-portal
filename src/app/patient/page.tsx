@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import * as pdfjsLib from "pdfjs-dist";
 import jsPDF from "jspdf";
 
 interface MedicalAnalysis {
@@ -122,6 +121,9 @@ export default function PatientDashboard() {
       try {
         setParsing(true);
         console.log('Starting PDF processing for file:', file.name, 'Size:', file.size, 'bytes');
+        
+        // Dynamically import PDF.js to avoid SSR issues
+        const pdfjsLib = await import('pdfjs-dist');
         
         // Configure PDF.js worker with local file
         pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;

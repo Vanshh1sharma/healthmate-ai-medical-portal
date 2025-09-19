@@ -37,7 +37,7 @@ export default function RootLayout({
               <img 
                 src="/healthmate-new-logo.png" 
                 alt="HealthMate Logo" 
-                className="h-12 w-auto object-contain filter drop-shadow-sm group-hover:scale-105 transition-all duration-300"
+                className="h-16 w-auto object-contain filter drop-shadow-sm group-hover:scale-105 transition-all duration-300"
               />
             </Link>
             <nav className="hidden md:flex items-center gap-2">

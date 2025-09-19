@@ -48,6 +48,10 @@ export default function Chatbot() {
     }
   }, [detectedLanguage]);
 
+  const getVoices = () => {
+    return window.speechSynthesis.getVoices();
+  };
+
   const speak = (text: string) => {
     if (typeof window === "undefined") return;
     
@@ -59,24 +63,53 @@ export default function Chatbot() {
     utter.pitch = 1;
     utter.lang = detectedLanguage === 'hi' ? 'hi-IN' : 'en-US';
     
-    // Select appropriate voice for the language
-    const voices = window.speechSynthesis.getVoices();
-    if (detectedLanguage === 'hi') {
-      // Try to find a Hindi voice
-      const hindiVoice = voices.find(voice => 
-        voice.lang.startsWith('hi') || voice.name.toLowerCase().includes('hindi')
-      );
-      if (hindiVoice) {
-        utter.voice = hindiVoice;
+    // Function to set voice once voices are available
+    const setVoice = () => {
+      const voices = getVoices();
+      console.log('Available voices:', voices.length);
+      
+      if (detectedLanguage === 'hi') {
+        // Try to find a Hindi voice
+        const hindiVoice = voices.find(voice => 
+          voice.lang.startsWith('hi') || voice.name.toLowerCase().includes('hindi')
+        );
+        if (hindiVoice) {
+          utter.voice = hindiVoice;
+          console.log('Selected Hindi voice:', hindiVoice.name);
+        }
+      } else {
+        // Try to find an English voice
+        const englishVoice = voices.find(voice => 
+          voice.lang.startsWith('en') && 
+          (voice.name.toLowerCase().includes('us') || 
+           voice.name.toLowerCase().includes('uk') || 
+           voice.name.toLowerCase().includes('english'))
+        );
+        if (englishVoice) {
+          utter.voice = englishVoice;
+          console.log('Selected English voice:', englishVoice.name);
+        } else {
+          // Fallback to any English voice
+          const anyEnglishVoice = voices.find(voice => voice.lang.startsWith('en'));
+          if (anyEnglishVoice) {
+            utter.voice = anyEnglishVoice;
+            console.log('Fallback English voice:', anyEnglishVoice.name);
+          }
+        }
       }
+    };
+
+    // Set voice immediately if available, or wait for voices to load
+    const voices = getVoices();
+    if (voices.length > 0) {
+      setVoice();
     } else {
-      // Try to find an English voice
-      const englishVoice = voices.find(voice => 
-        voice.lang.startsWith('en') && (voice.name.toLowerCase().includes('us') || voice.name.toLowerCase().includes('uk'))
-      );
-      if (englishVoice) {
-        utter.voice = englishVoice;
-      }
+      // Wait for voices to load
+      const voicesChanged = () => {
+        setVoice();
+        window.speechSynthesis.removeEventListener('voiceschanged', voicesChanged);
+      };
+      window.speechSynthesis.addEventListener('voiceschanged', voicesChanged);
     }
     
     utter.onstart = () => setSpeaking(true);
