@@ -89,24 +89,6 @@ export default function Home() {
       />
       <div className="absolute inset-0 -z-20 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:28px_28px]" />
 
-      {/* Navbar */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-black/20 border-b border-white/10">
-        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="size-8 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 shadow-[0_0_32px_rgba(16,185,129,0.4)]" />
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-400/60 to-cyan-500/60 blur-md" />
-            </div>
-            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">HealthMate</span>
-          </div>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="#about" className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-300">Features</Link>
-            <Link href="/patient" className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-300">Patient Portal</Link>
-            <Link href="/doctor" className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-300">Doctor Tools</Link>
-            <Link href="#features" className="px-4 py-2 text-sm font-medium bg-white/10 hover:bg-white/15 text-white rounded-xl border border-white/20 hover:border-white/30 backdrop-blur-xl transition-all duration-300">Get Started</Link>
-          </nav>
-        </div>
-      </header>
 
       {/* Hero */}
       <section ref={heroRef} className="relative mx-auto max-w-7xl px-6 pt-20 pb-16 sm:pt-32 sm:pb-24">
@@ -297,7 +279,7 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section id="about" className="mx-auto max-w-7xl px-6 py-24">
+      <section id="features" className="mx-auto max-w-7xl px-6 py-24">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">
             Powered by Advanced AI Technology
@@ -326,7 +308,7 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section id="features" className="mx-auto max-w-7xl px-6 pb-32">
+      <section id="cta" className="mx-auto max-w-7xl px-6 pb-32">
         <div className="relative">
           <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-blue-500/20 blur-3xl rounded-3xl" />
           <div className="relative rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl p-12 text-center shadow-2xl">
