@@ -29,7 +29,7 @@ const nextConfig: NextConfig = {
     ]
   },
   // Allow dev origins from Replit proxy
-  allowedDevOrigins: ['*.replit.dev'],
+  allowedDevOrigins: ['*.replit.dev', '*.spock.replit.dev'],
   // Enable experimental features for React 19 compatibility
   experimental: {
     // Disable React Strict Mode in dev if needed for compatibility

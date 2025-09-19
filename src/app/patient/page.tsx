@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import * as pdfjsLib from "pdfjs-dist";
 
 export default function PatientDashboard() {
   const [fileText, setFileText] = useState("");
@@ -24,6 +23,10 @@ export default function PatientDashboard() {
     if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
       try {
         setParsing(true);
+        
+        // Dynamically import PDF.js only when needed and on client side
+        const pdfjsLib = await import("pdfjs-dist");
+        
         (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${(pdfjsLib as any).version}/pdf.worker.min.js`;
 
         const buffer = await file.arrayBuffer();
