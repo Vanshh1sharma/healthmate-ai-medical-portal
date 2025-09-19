@@ -37,7 +37,7 @@ export default function RootLayout({
               <img 
                 src="/healthmate-logo.png" 
                 alt="HealthMate Logo" 
-                className="h-14 w-auto object-contain"
+                className="h-20 w-auto object-contain"
               />
             </Link>
             <nav className="hidden md:flex items-center gap-8">
