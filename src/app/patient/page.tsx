@@ -26,7 +26,8 @@ export default function PatientDashboard() {
   const [parseError, setParseError] = useState<string>("");
   
   // New state for AI workflow
-  const [currentStep, setCurrentStep] = useState<'upload' | 'questions' | 'report-type' | 'final-report'>('upload');
+  const [currentStep, setCurrentStep] = useState<'profile' | 'upload' | 'questions' | 'report-type' | 'final-report'>('profile');
+  const [showProfile, setShowProfile] = useState(true);
   const [analysis, setAnalysis] = useState<MedicalAnalysis | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -190,7 +191,8 @@ export default function PatientDashboard() {
 
   // Reset workflow
   const resetWorkflow = () => {
-    setCurrentStep('upload');
+    setCurrentStep('profile');
+    setShowProfile(true);
     setAnalysis(null);
     setCurrentQuestionIndex(0);
     setAnswers({});
@@ -217,10 +219,12 @@ export default function PatientDashboard() {
       <div className="mx-auto max-w-6xl px-6 py-16">
         <div className="text-center mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent">
-            Patient Portal
+            {currentStep === 'profile' ? 'Patient Profile' : 'Patient Portal'}
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Upload your health reports and receive AI-powered summaries with personalized insights and recommendations.
+            {currentStep === 'profile' 
+              ? 'Review your health history and access your latest medical reports.' 
+              : 'Upload your health reports and receive AI-powered summaries with personalized insights and recommendations.'}
           </p>
         </div>
 
@@ -244,6 +248,111 @@ export default function PatientDashboard() {
             </div>
           )}
           
+          {/* Profile Step */}
+          {currentStep === 'profile' && (
+            <div className="grid lg:grid-cols-3 gap-8">
+              {/* Profile Summary */}
+              <div className="lg:col-span-2 space-y-6">
+                <Card className="border border-blue-200 bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-2xl shadow-2xl">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-lg font-bold shadow-lg">
+                        👤
+                      </div>
+                      Patient Health Summary
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
+                        <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                          Last Health Issue
+                        </h4>
+                        <p className="text-green-700 font-medium">Blood pressure monitoring</p>
+                        <p className="text-green-600 text-sm mt-1">Analyzed on March 15, 2024</p>
+                      </div>
+                      <div className="bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl p-4 border border-blue-200">
+                        <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                          Reports Generated
+                        </h4>
+                        <p className="text-blue-700 font-medium">3 comprehensive reports</p>
+                        <p className="text-blue-600 text-sm mt-1">Latest: Personal & Professional</p>
+                      </div>
+                    </div>
+                    
+                    {/* Recent Activity */}
+                    <div className="bg-white rounded-xl p-4 border border-gray-200">
+                      <h4 className="font-semibold text-gray-800 mb-3">Recent Health Activity</h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                          <div className="w-3 h-3 bg-amber-400 rounded-full"></div>
+                          <div className="flex-1">
+                            <p className="text-amber-800 font-medium">Blood pressure analysis completed</p>
+                            <p className="text-amber-600 text-xs">March 15, 2024 • Professional report generated</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                          <div className="flex-1">
+                            <p className="text-blue-800 font-medium">Routine checkup report reviewed</p>
+                            <p className="text-blue-600 text-xs">March 10, 2024 • Personal report generated</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Quick Actions */}
+              <div className="space-y-6">
+                <Card className="border border-purple-200 bg-gradient-to-br from-purple-50 to-white backdrop-blur-2xl shadow-2xl">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg font-bold text-purple-700">Quick Actions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Button 
+                      onClick={() => setCurrentStep('upload')}
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold py-3 rounded-xl border-0 shadow-[0_8px_32px_rgba(59,130,246,0.35)] hover:shadow-[0_12px_48px_rgba(59,130,246,0.45)] transition-all duration-300"
+                    >
+                      📄 Upload New Report
+                    </Button>
+                    
+                    {finalReport && (
+                      <Button 
+                        onClick={() => {
+                          const blob = new Blob([finalReport.content], { type: 'text/plain' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `HealthMate_Report_${new Date().toLocaleDateString()}.txt`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                        }}
+                        className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-semibold py-3 rounded-xl border-0 shadow-[0_8px_32px_rgba(34,197,94,0.35)] hover:shadow-[0_12px_48px_rgba(34,197,94,0.45)] transition-all duration-300"
+                      >
+                        📥 Download Latest Report
+                      </Button>
+                    )}
+                    
+                    <div className="pt-2 border-t border-purple-200">
+                      <p className="text-purple-600 text-sm mb-2 font-medium">Health Insights</p>
+                      <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                        <p className="text-purple-700 text-xs">
+                          🎯 Your last blood pressure reading showed normal ranges. Continue monitoring as recommended.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
           {/* Upload Step */}
           {currentStep === 'upload' && (
             <div className="grid md:grid-cols-2 gap-8">
