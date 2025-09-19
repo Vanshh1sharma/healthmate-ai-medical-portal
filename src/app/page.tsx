@@ -96,7 +96,7 @@ export default function Home() {
               <CardContent className="p-0">
                 <div className="relative">
                   <img
-                    src="https://images.unsplash.com/photo-1586773860383-dab5f3bc1f33?q=80&w=1600&auto=format&fit=crop"
+                    src="/medical-interface.jpg"
                     alt="Advanced medical technology interface"
                     className="h-[400px] w-full object-cover"
                   />
