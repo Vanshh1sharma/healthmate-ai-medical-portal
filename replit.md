@@ -41,6 +41,28 @@ The project is configured to run on port 5000 in the Replit environment:
 - ✅ GEMINI_API_KEY configured successfully - AI features now fully operational
 - ✅ Logo size increased for better visibility and branding
 
+## Latest Enhancements (September 19, 2025)
+- ✅ **Multilingual Support**: Added Hindi language support to the AI chatbot
+  - Language toggle between English (EN) and Hindi (हिं) in chatbot interface
+  - Voice recognition supports both English (en-US) and Hindi (hi-IN)
+  - Text-to-speech speaks responses in the selected language
+  - Localized UI elements and messages based on language selection
+- ✅ **Enhanced Voice Controls**: Improved voice interaction features
+  - Stop Speaking button appears during AI response playback
+  - Better voice input handling with language-specific recognition
+  - Voice controls disabled appropriately during loading states
+- ✅ **AI-Powered Chatbot**: Replaced hardcoded responses with intelligent AI
+  - New API endpoint (/api/chatbot) integrates with Gemini AI
+  - Context-aware medical guidance in both English and Hindi
+  - Proper error handling with localized fallback messages
+  - Loading states and disabled controls during AI processing
+- ✅ **Improved PDF Processing**: Enhanced medical report upload functionality
+  - Better error handling with specific messages for different failure types
+  - Enhanced text extraction with preserved line formatting
+  - Detailed logging for debugging PDF processing issues
+  - Fallback options for PDF.js worker configuration
+  - Support for various PDF formats with graceful error handling
+
 ## AI Features
 - **Intelligent Report Analysis**: Extracts key findings and generates relevant questions
 - **Interactive Q&A**: HealthMate Sathi asks smart questions based on report content
