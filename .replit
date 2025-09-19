@@ -5,6 +5,7 @@ channel = "stable-25_05"
 
 [agent]
 expertMode = true
+integrations = ["javascript_openai:1.0.0"]
 
 [workflows]
 runButton = "Project"
@@ -35,7 +36,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 34857
+localPort = 44115
 externalPort = 3001
 
 [[ports]]

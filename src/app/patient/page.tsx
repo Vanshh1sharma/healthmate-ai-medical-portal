@@ -6,14 +6,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+interface MedicalAnalysis {
+  keyFindings: string[];
+  potentialConditions: string[];
+  urgencyLevel: 'low' | 'medium' | 'high';
+  questions: string[];
+}
+
+interface GeneratedReport {
+  content: string;
+  recommendations: string[];
+}
+
 export default function PatientDashboard() {
   const [fileText, setFileText] = useState("");
   const [loading, setLoading] = useState(false);
-  const [summary, setSummary] = useState<string | null>(null);
-  const [insights, setInsights] = useState<{ label: string; value: string; trend?: string }[]>([]);
   const [fileName, setFileName] = useState<string>("");
   const [parsing, setParsing] = useState<boolean>(false);
   const [parseError, setParseError] = useState<string>("");
+  
+  // New state for AI workflow
+  const [currentStep, setCurrentStep] = useState<'upload' | 'questions' | 'report-type' | 'final-report'>('upload');
+  const [analysis, setAnalysis] = useState<MedicalAnalysis | null>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [currentAnswer, setCurrentAnswer] = useState("");
+  const [reportType, setReportType] = useState<'personal' | 'professional' | null>(null);
+  const [finalReport, setFinalReport] = useState<GeneratedReport | null>(null);
+  const [generatingReport, setGeneratingReport] = useState(false);
 
   const onFile = async (file?: File) => {
     if (!file) return;
@@ -54,21 +74,93 @@ export default function PatientDashboard() {
     setFileText(text);
   };
 
-  const onSummarize = async () => {
+  // Analyze report and start Q&A workflow
+  const analyzeReport = async () => {
     if (!fileText.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/summary", {
+      const res = await fetch("/api/analyze-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: fileText }),
       });
       const data = await res.json();
-      setSummary(data.summary);
-      setInsights(data.insights || []);
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      setAnalysis(data.analysis);
+      setCurrentStep('questions');
+      setCurrentQuestionIndex(0);
+    } catch (error) {
+      console.error('Error analyzing report:', error);
+      setParseError(error instanceof Error ? error.message : 'Failed to analyze report');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle answer submission for current question
+  const submitAnswer = () => {
+    if (!analysis || !currentAnswer.trim()) return;
+    
+    const question = analysis.questions[currentQuestionIndex];
+    setAnswers(prev => ({ ...prev, [question]: currentAnswer }));
+    setCurrentAnswer("");
+    
+    if (currentQuestionIndex < analysis.questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      setCurrentStep('report-type');
+    }
+  };
+
+  // Generate final report
+  const generateFinalReport = async (type: 'personal' | 'professional') => {
+    if (!analysis) return;
+    
+    setReportType(type);
+    setGeneratingReport(true);
+    
+    try {
+      const reportData = {
+        patientResponses: answers,
+        originalReport: fileText,
+        analysis: analysis
+      };
+      
+      const res = await fetch("/api/generate-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reportData, reportType: type }),
+      });
+      
+      const data = await res.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      setFinalReport(data.report);
+      setCurrentStep('final-report');
+    } catch (error) {
+      console.error('Error generating report:', error);
+      setParseError(error instanceof Error ? error.message : 'Failed to generate report');
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
+
+  // Reset workflow
+  const resetWorkflow = () => {
+    setCurrentStep('upload');
+    setAnalysis(null);
+    setCurrentQuestionIndex(0);
+    setAnswers({});
+    setCurrentAnswer("");
+    setReportType(null);
+    setFinalReport(null);
+    setFileText("");
+    setFileName("");
+    setParseError("");
   };
 
   return (
@@ -90,88 +182,209 @@ export default function PatientDashboard() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <Card className="border border-blue-200 bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-2xl shadow-2xl">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Upload Medical Report</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-            <div className="relative">
-              <Input type="file" accept=".pdf,.txt,.md,.json,.csv,.log,.doc,.docx" onChange={(e) => onFile(e.target.files?.[0])} 
-                className="bg-white border-blue-200 text-gray-900 file:bg-gradient-to-r file:from-blue-500 file:to-blue-600 file:text-white file:border-0 file:rounded-lg file:px-4 file:py-2 file:mr-4 hover:bg-blue-50 transition-all duration-300" />
-            </div>
-            {fileName && (
-              <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
-                <p className="text-sm text-gray-700">📄 Selected: <span className="text-gray-900 font-medium">{fileName}</span>{parsing ? " – parsing PDF…" : ""}</p>
-              </div>
-            )}
-            {parseError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-sm text-red-600">{parseError}</p>
-              </div>
-            )}
-            <Textarea
-              value={fileText}
-              onChange={(e) => setFileText(e.target.value)}
-              placeholder="Or paste your report text here..."
-              className="min-h-[160px] bg-white border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
-            />
-            <Button 
-              onClick={onSummarize} 
-              disabled={loading || parsing || !fileText.trim()}
-              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl border-0 shadow-[0_8px_32px_rgba(59,130,246,0.35)] hover:shadow-[0_12px_48px_rgba(59,130,246,0.45)] transition-all duration-300 disabled:opacity-50"
-            >
-              {loading ? "🔄 Analyzing..." : "✨ Generate AI Summary"}
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="space-y-8">
+          {/* Upload Step */}
+          {currentStep === 'upload' && (
+            <div className="grid md:grid-cols-2 gap-8">
+              <Card className="border border-blue-200 bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-2xl shadow-2xl">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Upload Medical Report</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="relative">
+                    <Input type="file" accept=".pdf,.txt,.md,.json,.csv,.log,.doc,.docx" onChange={(e) => onFile(e.target.files?.[0])} 
+                      className="bg-white border-blue-200 text-gray-900 file:bg-gradient-to-r file:from-blue-500 file:to-blue-600 file:text-white file:border-0 file:rounded-lg file:px-4 file:py-2 file:mr-4 hover:bg-blue-50 transition-all duration-300" />
+                  </div>
+                  {fileName && (
+                    <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                      <p className="text-sm text-gray-700">📄 Selected: <span className="text-gray-900 font-medium">{fileName}</span>{parsing ? " – parsing PDF…" : ""}</p>
+                    </div>
+                  )}
+                  {parseError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                      <p className="text-sm text-red-600">{parseError}</p>
+                    </div>
+                  )}
+                  <Textarea
+                    value={fileText}
+                    onChange={(e) => setFileText(e.target.value)}
+                    placeholder="Or paste your report text here..."
+                    className="min-h-[160px] bg-white border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+                  />
+                  <Button 
+                    onClick={analyzeReport} 
+                    disabled={loading || parsing || !fileText.trim()}
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl border-0 shadow-[0_8px_32px_rgba(59,130,246,0.35)] hover:shadow-[0_12px_48px_rgba(59,130,246,0.45)] transition-all duration-300 disabled:opacity-50"
+                  >
+                    {loading ? "🔄 Analyzing..." : "✨ Analyze Report with HealthMate Sathi"}
+                  </Button>
+                </CardContent>
+              </Card>
 
-          <Card className="border border-blue-200 bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-2xl shadow-2xl">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">AI-Generated Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {summary ? (
-                <div className="space-y-4">
-                  <p className="whitespace-pre-wrap leading-relaxed text-gray-700">{summary}</p>
-                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-700 font-medium">✅ Analysis Complete</p>
-                    <p className="text-xs text-blue-600 mt-1">This summary was generated using advanced AI to help you understand your medical report better.</p>
+              <Card className="border border-blue-200 bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-2xl shadow-2xl">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">HealthMate Sathi</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-12">
+                    <div className="text-4xl mb-4">🤖</div>
+                    <p className="text-gray-500">Hello! I'm your HealthMate Sathi. Upload your medical report and I'll ask you some questions to better understand your condition, then create a personalized report just for you.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Questions Step */}
+          {currentStep === 'questions' && analysis && (
+            <Card className="border border-blue-200 bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-2xl shadow-2xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+                  HealthMate Sathi Questions ({currentQuestionIndex + 1} of {analysis.questions.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <p className="text-blue-800 font-medium mb-2">🤖 HealthMate Sathi asks:</p>
+                  <p className="text-gray-800">{analysis.questions[currentQuestionIndex]}</p>
+                </div>
+                <Textarea
+                  value={currentAnswer}
+                  onChange={(e) => setCurrentAnswer(e.target.value)}
+                  placeholder="Please share your answer here..."
+                  className="min-h-[120px] bg-white border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+                />
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={submitAnswer} 
+                    disabled={!currentAnswer.trim()}
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl border-0 shadow-[0_8px_32px_rgba(59,130,246,0.35)] hover:shadow-[0_12px_48px_rgba(59,130,246,0.45)] transition-all duration-300 disabled:opacity-50"
+                  >
+                    {currentQuestionIndex < analysis.questions.length - 1 ? "Next Question →" : "Complete Q&A →"}
+                  </Button>
+                  <Button 
+                    onClick={resetWorkflow}
+                    variant="outline"
+                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                  >
+                    Start Over
+                  </Button>
+                </div>
+                
+                {/* Progress indicator */}
+                <div className="w-full bg-blue-100 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300" 
+                    style={{ width: `${((currentQuestionIndex + 1) / analysis.questions.length) * 100}%` }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Report Type Selection Step */}
+          {currentStep === 'report-type' && (
+            <Card className="border border-blue-200 bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-2xl shadow-2xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+                  Choose Your Report Type
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card className="border border-green-200 bg-gradient-to-br from-green-50 to-white hover:shadow-lg transition-all duration-300 cursor-pointer" 
+                        onClick={() => generateFinalReport('personal')}>
+                    <CardContent className="p-6">
+                      <div className="text-center space-y-3">
+                        <div className="text-3xl">👤</div>
+                        <h3 className="text-lg font-bold text-green-700">Personal Report</h3>
+                        <p className="text-sm text-gray-600">Easy-to-understand explanation of your health condition with practical advice and simple language.</p>
+                        <p className="text-xs text-green-600">Perfect for understanding your health at home</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="border border-purple-200 bg-gradient-to-br from-purple-50 to-white hover:shadow-lg transition-all duration-300 cursor-pointer" 
+                        onClick={() => generateFinalReport('professional')}>
+                    <CardContent className="p-6">
+                      <div className="text-center space-y-3">
+                        <div className="text-3xl">👨‍⚕️</div>
+                        <h3 className="text-lg font-bold text-purple-700">Professional Report</h3>
+                        <p className="text-sm text-gray-600">Medical terminology and clinical recommendations suitable for sharing with doctors and healthcare providers.</p>
+                        <p className="text-xs text-purple-600">Perfect for doctor consultations</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div className="mt-4 text-center">
+                  <Button 
+                    onClick={resetWorkflow}
+                    variant="outline"
+                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                  >
+                    Start Over
+                  </Button>
+                </div>
+                
+                {generatingReport && (
+                  <div className="mt-6 bg-blue-50 rounded-lg p-4 border border-blue-200 text-center">
+                    <p className="text-blue-700">🔄 Generating your report... This may take a moment.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Final Report Step */}
+          {currentStep === 'final-report' && finalReport && (
+            <Card className="border border-blue-200 bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-2xl shadow-2xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+                  Your {reportType === 'personal' ? 'Personal' : 'Professional'} Report
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-white rounded-lg p-6 border border-blue-100">
+                  <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
+                    {finalReport.content}
                   </div>
                 </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="text-4xl mb-4">🤖</div>
-                  <p className="text-gray-500">Your AI-generated summary will appear here once you upload and analyze your medical report.</p>
+                
+                {finalReport.recommendations && finalReport.recommendations.length > 0 && (
+                  <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                    <h4 className="font-bold text-green-800 mb-2">Key Recommendations:</h4>
+                    <ul className="space-y-1">
+                      {finalReport.recommendations.map((rec, idx) => (
+                        <li key={idx} className="text-green-700 text-sm flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>{rec}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={resetWorkflow}
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl border-0 shadow-[0_8px_32px_rgba(59,130,246,0.35)] hover:shadow-[0_12px_48px_rgba(59,130,246,0.45)] transition-all duration-300"
+                  >
+                    Analyze Another Report
+                  </Button>
+                  <Button 
+                    onClick={() => navigator.clipboard.writeText(finalReport.content)}
+                    variant="outline"
+                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                  >
+                    📋 Copy Report
+                  </Button>
                 </div>
-              )}
-          </CardContent>
-        </Card>
-      </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
-        {insights.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Key Insights</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {insights.map((i, idx) => (
-                <Card key={idx} className="group border border-blue-200 bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-1">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">{i.label}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700 mb-3">{i.value}</p>
-                    {i.trend && (
-                      <div className="bg-blue-50 rounded-lg p-2 border border-blue-100">
-                        <p className="text-xs text-gray-600">Trend: <span className="text-blue-600">{i.trend}</span></p>
-                      </div>
-                    )}
-                    <div className="mt-4 w-8 h-1 bg-gradient-to-r from-blue-500 to-blue-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
