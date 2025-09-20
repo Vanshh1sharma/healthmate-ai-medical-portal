@@ -126,12 +126,23 @@ export default function PatientDashboard() {
         // Dynamically import PDF.js to avoid SSR issues
         const pdfjsLib = await import('pdfjs-dist');
         
-        // Configure PDF.js worker with local file
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
-        console.log('PDF.js version:', pdfjsLib.version);
+        // Configure PDF.js worker with multiple fallback options
+        try {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
+        } catch (workerError) {
+          console.warn('Failed to load local worker, trying CDN fallback:', workerError);
+          pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+        }
+        
+        console.log('📄 PDF.js version:', pdfjsLib.version);
+        console.log('🔧 Worker source:', pdfjsLib.GlobalWorkerOptions.workerSrc);
 
         const buffer = await file.arrayBuffer();
-        console.log('File buffer size:', buffer.byteLength, 'bytes');
+        console.log('📊 File buffer size:', buffer.byteLength, 'bytes');
+        
+        if (buffer.byteLength === 0) {
+          throw new Error('PDF file appears to be empty or corrupted');
+        }
         
         const loadingTask = pdfjsLib.getDocument({ 
           data: new Uint8Array(buffer),
@@ -884,25 +895,32 @@ export default function PatientDashboard() {
               </Card>
 
               {/* Enhanced Action Buttons */}
-              <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-green-50 rounded-3xl p-8 border border-blue-200/50 shadow-lg">
+              <div className="bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 rounded-2xl p-8 border border-gray-200/50 shadow-[0_8px_32px_rgba(0,0,0,0.08)] backdrop-blur-sm">
                 <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-3">
-                    📋 Your Report is Ready!
-                  </h3>
-                  <p className="text-gray-700 text-lg font-medium">Choose how you'd like to use your personalized health analysis</p>
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg">
+                      📋
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-800">
+                      Your Report is Ready!
+                    </h3>
+                  </div>
+                  <p className="text-gray-600 text-base font-medium max-w-2xl mx-auto">Choose how you'd like to use your personalized health analysis</p>
                 </div>
                 
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-3 gap-8">
                   <Button 
                     onClick={downloadPDF}
-                    className="group relative bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold px-8 py-7 rounded-3xl border-0 shadow-[0_12px_40px_rgba(34,197,94,0.4)] hover:shadow-[0_16px_56px_rgba(34,197,94,0.55)] transform hover:scale-110 transition-all duration-300 min-h-[140px]"
+                    className="group relative bg-gradient-to-br from-green-500 via-green-600 to-emerald-700 hover:from-green-400 hover:via-green-500 hover:to-emerald-600 text-white font-semibold px-6 py-8 rounded-xl border border-white/20 shadow-[0_8px_32px_rgba(34,197,94,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_16px_48px_rgba(34,197,94,0.35),inset_0_1px_0_rgba(255,255,255,0.3)] transform hover:scale-[1.02] hover:-translate-y-1 transition-all duration-500 min-h-[180px] backdrop-blur-sm"
                   >
-                    {/* Shimmer effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-[shimmer_1.5s_ease-in-out] rounded-3xl"></div>
-                    <div className="flex flex-col items-center gap-3 relative z-10">
-                      <div className="text-4xl group-hover:animate-bounce">📥</div>
-                      <span className="text-xl font-extrabold">Download PDF Report</span>
-                      <span className="text-sm opacity-95 text-center leading-tight">Save your complete health analysis for sharing with doctors</span>
+                    {/* Professional gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/5 rounded-xl"></div>
+                    {/* Subtle shimmer effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-[shimmer_2s_ease-in-out] rounded-xl"></div>
+                    <div className="flex flex-col items-center gap-4 relative z-10">
+                      <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-300 backdrop-blur-sm border border-white/30">📥</div>
+                      <span className="text-lg font-bold tracking-wide">Download PDF Report</span>
+                      <span className="text-xs opacity-90 text-center leading-relaxed max-w-[180px]">Save your complete health analysis for sharing with doctors</span>
                     </div>
                   </Button>
                   
@@ -925,21 +943,24 @@ export default function PatientDashboard() {
                         setTimeout(() => setCopySuccess(false), 2000);
                       }
                     }}
-                    className="group relative bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-400 hover:to-blue-500 text-white font-bold px-8 py-7 rounded-3xl border-0 shadow-[0_12px_40px_rgba(147,51,234,0.4)] hover:shadow-[0_16px_56px_rgba(147,51,234,0.55)] transform hover:scale-110 transition-all duration-300 min-h-[140px]"
+                    className="group relative bg-gradient-to-br from-purple-500 via-purple-600 to-blue-700 hover:from-purple-400 hover:via-purple-500 hover:to-blue-600 text-white font-semibold px-6 py-8 rounded-xl border border-white/20 shadow-[0_8px_32px_rgba(147,51,234,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_16px_48px_rgba(147,51,234,0.35),inset_0_1px_0_rgba(255,255,255,0.3)] transform hover:scale-[1.02] hover:-translate-y-1 transition-all duration-500 min-h-[180px] backdrop-blur-sm"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-[shimmer_1.5s_ease-in-out] rounded-3xl"></div>
-                    <div className="flex flex-col items-center gap-3 relative z-10">
+                    {/* Professional gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/5 rounded-xl"></div>
+                    {/* Subtle shimmer effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-[shimmer_2s_ease-in-out] rounded-xl"></div>
+                    <div className="flex flex-col items-center gap-4 relative z-10">
                       {copySuccess ? (
                         <>
-                          <div className="text-4xl animate-bounce">✅</div>
-                          <span className="text-xl font-extrabold">Copied!</span>
-                          <span className="text-sm opacity-95 text-center leading-tight">Report copied to clipboard</span>
+                          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl animate-bounce backdrop-blur-sm border border-white/30">✅</div>
+                          <span className="text-lg font-bold tracking-wide">Copied!</span>
+                          <span className="text-xs opacity-90 text-center leading-relaxed max-w-[180px]">Report copied to clipboard</span>
                         </>
                       ) : (
                         <>
-                          <div className="text-4xl group-hover:animate-pulse">📋</div>
-                          <span className="text-xl font-extrabold">Copy Report Text</span>
-                          <span className="text-sm opacity-95 text-center leading-tight">Copy to share via email or messaging apps</span>
+                          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-300 backdrop-blur-sm border border-white/30">📋</div>
+                          <span className="text-lg font-bold tracking-wide">Copy Report Text</span>
+                          <span className="text-xs opacity-90 text-center leading-relaxed max-w-[180px]">Copy to share via email or messaging apps</span>
                         </>
                       )}
                     </div>
@@ -947,13 +968,16 @@ export default function PatientDashboard() {
                   
                   <Button 
                     onClick={resetWorkflow}
-                    className="group relative bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-bold px-8 py-7 rounded-3xl border-0 shadow-[0_12px_40px_rgba(59,130,246,0.4)] hover:shadow-[0_16px_56px_rgba(59,130,246,0.55)] transform hover:scale-110 transition-all duration-300 min-h-[140px]"
+                    className="group relative bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 hover:from-blue-400 hover:via-blue-500 hover:to-indigo-600 text-white font-semibold px-6 py-8 rounded-xl border border-white/20 shadow-[0_8px_32px_rgba(59,130,246,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_16px_48px_rgba(59,130,246,0.35),inset_0_1px_0_rgba(255,255,255,0.3)] transform hover:scale-[1.02] hover:-translate-y-1 transition-all duration-500 min-h-[180px] backdrop-blur-sm"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-[shimmer_1.5s_ease-in-out] rounded-3xl"></div>
-                    <div className="flex flex-col items-center gap-3 relative z-10">
-                      <div className="text-4xl group-hover:animate-spin">🔄</div>
-                      <span className="text-xl font-extrabold">Start New Analysis</span>
-                      <span className="text-sm opacity-95 text-center leading-tight">Upload another report or analyze new symptoms</span>
+                    {/* Professional gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/5 rounded-xl"></div>
+                    {/* Subtle shimmer effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-[shimmer_2s_ease-in-out] rounded-xl"></div>
+                    <div className="flex flex-col items-center gap-4 relative z-10">
+                      <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl group-hover:scale-110 group-hover:rotate-180 transition-all duration-500 backdrop-blur-sm border border-white/30">🔄</div>
+                      <span className="text-lg font-bold tracking-wide">Start New Analysis</span>
+                      <span className="text-xs opacity-90 text-center leading-relaxed max-w-[180px]">Upload another report or analyze new symptoms</span>
                     </div>
                   </Button>
                 </div>

@@ -172,15 +172,34 @@ export default function Chatbot() {
     
     utter.onstart = () => {
       setSpeaking(true);
-      console.log('Speech started for:', detectedLanguage, 'language');
+      console.log('✅ Speech started successfully for:', detectedLanguage, 'language');
+      console.log('🗣️ Voice used:', utter.voice?.name || 'default', '| Language code:', utter.lang);
+      console.log('⚙️ Speech settings - Rate:', utter.rate, '| Pitch:', utter.pitch, '| Volume:', utter.volume);
     };
     utter.onend = () => {
       setSpeaking(false);
-      console.log('Speech ended');
+      console.log('🔚 Speech ended successfully');
     };
     utter.onerror = (event) => {
       setSpeaking(false);
-      console.error('Speech error:', event);
+      console.error('❌ Speech error occurred:', event.error);
+      console.error('📋 Error details:', {
+        error: event.error,
+        type: event.type,
+        textLength: text.length,
+        language: detectedLanguage,
+        voiceName: utter.voice?.name || 'default',
+        voiceLang: utter.voice?.lang || 'unknown'
+      });
+      
+      // Provide specific debugging information
+      if (event.error === 'network') {
+        console.warn('⚠️ Network error: Content might be too long or network connection issue');
+      } else if (event.error === 'synthesis-failed') {
+        console.warn('⚠️ Synthesis failed: Likely language/voice compatibility issue');
+      } else if (event.error === 'audio-busy') {
+        console.warn('⚠️ Audio busy: Another speech synthesis might be running');
+      }
     };
     
     utteranceRef.current = utter;
