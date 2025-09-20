@@ -38,6 +38,7 @@ export default function PatientDashboard() {
   const [globalError, setGlobalError] = useState<string>("");
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [consentGiven, setConsentGiven] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   // PDF Download Function
   const downloadPDF = () => {
@@ -883,45 +884,76 @@ export default function PatientDashboard() {
               </Card>
 
               {/* Enhanced Action Buttons */}
-              <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-green-50 rounded-3xl p-6 border border-blue-200/50">
-                <div className="text-center mb-6">
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
-                    Next Steps
+              <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-green-50 rounded-3xl p-8 border border-blue-200/50 shadow-lg">
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-3">
+                    📋 Your Report is Ready!
                   </h3>
-                  <p className="text-gray-600 text-sm">Choose how you'd like to use your health report</p>
+                  <p className="text-gray-700 text-lg font-medium">Choose how you'd like to use your personalized health analysis</p>
                 </div>
                 
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid md:grid-cols-3 gap-6">
                   <Button 
                     onClick={downloadPDF}
-                    className="group bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-semibold px-6 py-5 rounded-2xl border-0 shadow-[0_8px_32px_rgba(34,197,94,0.35)] hover:shadow-[0_12px_48px_rgba(34,197,94,0.45)] transform hover:scale-105 transition-all duration-300"
+                    className="group relative bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold px-8 py-7 rounded-3xl border-0 shadow-[0_12px_40px_rgba(34,197,94,0.4)] hover:shadow-[0_16px_56px_rgba(34,197,94,0.55)] transform hover:scale-110 transition-all duration-300 min-h-[140px]"
                   >
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="text-3xl group-hover:animate-bounce">📄</div>
-                      <span className="text-lg">Download PDF</span>
-                      <span className="text-sm opacity-90">Save report as PDF</span>
+                    {/* Shimmer effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-[shimmer_1.5s_ease-in-out] rounded-3xl"></div>
+                    <div className="flex flex-col items-center gap-3 relative z-10">
+                      <div className="text-4xl group-hover:animate-bounce">📥</div>
+                      <span className="text-xl font-extrabold">Download PDF Report</span>
+                      <span className="text-sm opacity-95 text-center leading-tight">Save your complete health analysis for sharing with doctors</span>
                     </div>
                   </Button>
                   
                   <Button 
-                    onClick={() => navigator.clipboard.writeText(finalReport.content)}
-                    className="group bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-400 hover:to-blue-500 text-white font-semibold px-6 py-5 rounded-2xl border-0 shadow-[0_8px_32px_rgba(147,51,234,0.35)] hover:shadow-[0_12px_48px_rgba(147,51,234,0.45)] transform hover:scale-105 transition-all duration-300"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(finalReport.content);
+                        setCopySuccess(true);
+                        setTimeout(() => setCopySuccess(false), 2000);
+                      } catch (error) {
+                        console.error('Failed to copy to clipboard:', error);
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = finalReport.content;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        setCopySuccess(true);
+                        setTimeout(() => setCopySuccess(false), 2000);
+                      }
+                    }}
+                    className="group relative bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-400 hover:to-blue-500 text-white font-bold px-8 py-7 rounded-3xl border-0 shadow-[0_12px_40px_rgba(147,51,234,0.4)] hover:shadow-[0_16px_56px_rgba(147,51,234,0.55)] transform hover:scale-110 transition-all duration-300 min-h-[140px]"
                   >
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="text-3xl group-hover:animate-pulse">📋</div>
-                      <span className="text-lg">Copy Report</span>
-                      <span className="text-sm opacity-90">Copy to clipboard</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-[shimmer_1.5s_ease-in-out] rounded-3xl"></div>
+                    <div className="flex flex-col items-center gap-3 relative z-10">
+                      {copySuccess ? (
+                        <>
+                          <div className="text-4xl animate-bounce">✅</div>
+                          <span className="text-xl font-extrabold">Copied!</span>
+                          <span className="text-sm opacity-95 text-center leading-tight">Report copied to clipboard</span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-4xl group-hover:animate-pulse">📋</div>
+                          <span className="text-xl font-extrabold">Copy Report Text</span>
+                          <span className="text-sm opacity-95 text-center leading-tight">Copy to share via email or messaging apps</span>
+                        </>
+                      )}
                     </div>
                   </Button>
                   
                   <Button 
                     onClick={resetWorkflow}
-                    className="group bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-semibold px-6 py-5 rounded-2xl border-0 shadow-[0_8px_32px_rgba(59,130,246,0.35)] hover:shadow-[0_12px_48px_rgba(59,130,246,0.45)] transform hover:scale-105 transition-all duration-300"
+                    className="group relative bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-bold px-8 py-7 rounded-3xl border-0 shadow-[0_12px_40px_rgba(59,130,246,0.4)] hover:shadow-[0_16px_56px_rgba(59,130,246,0.55)] transform hover:scale-110 transition-all duration-300 min-h-[140px]"
                   >
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="text-3xl group-hover:animate-spin">🔄</div>
-                      <span className="text-lg">New Analysis</span>
-                      <span className="text-sm opacity-90">Start new report</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-[shimmer_1.5s_ease-in-out] rounded-3xl"></div>
+                    <div className="flex flex-col items-center gap-3 relative z-10">
+                      <div className="text-4xl group-hover:animate-spin">🔄</div>
+                      <span className="text-xl font-extrabold">Start New Analysis</span>
+                      <span className="text-sm opacity-95 text-center leading-tight">Upload another report or analyze new symptoms</span>
                     </div>
                   </Button>
                 </div>

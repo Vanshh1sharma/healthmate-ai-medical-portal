@@ -58,6 +58,8 @@ export default function Chatbot() {
     // Cancel any previous speech
     window.speechSynthesis.cancel();
     
+    console.log('🎤 Speaking text:', text.substring(0, 100) + '...', 'in language:', detectedLanguage);
+    
     const utter = new SpeechSynthesisUtterance(text);
     utter.rate = 0.9;
     utter.pitch = 1;
@@ -67,7 +69,15 @@ export default function Chatbot() {
     // Function to set voice once voices are available
     const setVoice = () => {
       const voices = getVoices();
-      console.log('Available voices for', detectedLanguage, ':', voices.length);
+      console.log('🔍 Available voices total:', voices.length);
+      
+      // Log all available Hindi voices for debugging
+      const hindiVoices = voices.filter(voice => 
+        voice.lang.includes('hi') || 
+        voice.name.toLowerCase().includes('hindi') ||
+        voice.lang === 'hi-IN'
+      );
+      console.log('🇮🇳 Found Hindi voices:', hindiVoices.map(v => `${v.name} (${v.lang})`));
       
       if (detectedLanguage === 'hi') {
         // Enhanced Hindi voice detection with multiple fallbacks
@@ -91,11 +101,29 @@ export default function Chatbot() {
           );
         }
         
+        // Try Microsoft voices
+        if (!hindiVoice) {
+          hindiVoice = voices.find(voice => 
+            voice.name.toLowerCase().includes('microsoft') && 
+            (voice.lang.includes('hi') || voice.name.toLowerCase().includes('hindi'))
+          );
+        }
+        
+        // Try any voice that mentions 'india' or 'hindi'
+        if (!hindiVoice) {
+          hindiVoice = voices.find(voice => 
+            voice.name.toLowerCase().includes('india') ||
+            voice.name.toLowerCase().includes('hindi') ||
+            voice.lang.toLowerCase().includes('hi-in')
+          );
+        }
+        
         if (hindiVoice) {
           utter.voice = hindiVoice;
-          console.log('Selected Hindi voice:', hindiVoice.name, hindiVoice.lang);
+          console.log('✅ Selected Hindi voice:', hindiVoice.name, hindiVoice.lang);
         } else {
-          console.log('No Hindi voice found, using default');
+          console.warn('⚠️ No specific Hindi voice found! Using system default with hi-IN lang');
+          console.log('📋 Available voice names:', voices.slice(0, 10).map(v => v.name));
           // Force Hindi language even without specific voice
           utter.lang = 'hi-IN';
         }
@@ -109,13 +137,13 @@ export default function Chatbot() {
         );
         if (englishVoice) {
           utter.voice = englishVoice;
-          console.log('Selected English voice:', englishVoice.name);
+          console.log('✅ Selected English voice:', englishVoice.name);
         } else {
           // Fallback to any English voice
           const anyEnglishVoice = voices.find(voice => voice.lang.startsWith('en'));
           if (anyEnglishVoice) {
             utter.voice = anyEnglishVoice;
-            console.log('Fallback English voice:', anyEnglishVoice.name);
+            console.log('✅ Fallback English voice:', anyEnglishVoice.name);
           }
         }
       }
